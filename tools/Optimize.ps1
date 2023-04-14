@@ -33,7 +33,7 @@ $ps_script_list = @(
 $wco = (New-Object System.Net.WebClient)
 
 ForEach ($ps_script in $ps_script_list) {
-	$download_url = "https://github.com/gtumanyan/windows-tools/Fix-Windows-11-detection/tools/$ps_script"
+	$download_url = "https://github.com/gtumanyan/windows-tools/raw/Fix-Windows-11-detection/tools/$ps_script"
 
 	""
 	"--- Downloading $ps_script... ---"
