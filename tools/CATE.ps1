@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 6.5
+.VERSION 6.7
 
 .GUID f842f577-3f42-4cb0-91e7-97b499260a21
 
@@ -150,7 +150,7 @@ Param()
 # Cleans temp files from all user profiles and
 # several other locations.  Also clears log files.
 #
-# Copyright 2020 Jonathan E. Brickman
+# Copyright 2023 Jonathan E. Brickman
 # https://notes.ponderworthy.com/
 # This script is licensed under the 3-Clause BSD License
 # https://opensource.org/licenses/BSD-3-Clause
@@ -380,11 +380,18 @@ function CATE-Delete-Folder-Contents {
 		{ Return }
 		
 	ShowCATEProgress $CATEStatus $deletePath
+	""
 	"Counting contents of $deletepath ..."
 	# $file_count = [System.IO.Directory]::GetFiles("$deletepath", "*").Count
-	$file_count = (Get-ChildItem -File -Recurse $deletepath | Measure-Object).Count
-	"Deleting $file_count items in $deletepath ..."
-	""
+	try {
+		$file_count = (Get-ChildItem -File -Recurse $deletepath | Measure-Object).Count
+		}
+	catch
+		{
+		"Access denied: $deletepath"
+		return
+		}
+	"Deleting $file_count items ..."
 		
 	# First try to wipe the inside of the folder simply.
 	# ROBOCOPY is current default method, for parallelism.
@@ -415,13 +422,13 @@ function CATE-Delete-Files-Only {
 		{ Return }
 		
 	ShowCATEProgress $CATEStatus ($deletePath + '\' + $wildCard)
+	""
 	"Counting contents of $deletepath ..."
 	$filepath = $deletePath
 	$filetype = $wildCard
 	# $file_count = [System.IO.Directory]::GetFiles("$filepath", "$filetype").Count
 	$file_count = (Get-ChildItem -File "$filepath\$filetype" | Measure-Object).Count
-	"Deleting $file_count files in $filepath ..."
-	""
+	"Deleting $file_count files ..."
 	
 	ROBOCOPY $blankFolder $deletePath $wildCard /MIR /R:1 /W:1 /MT:10 *> $null
 	}
@@ -496,12 +503,15 @@ $ProfileList | ForEach-Object {
 
 $CATEStatus = "Working on other folders ..."
 
+"Clearing environment folder TEMP ..."
 CATE-Delete-Folder-Contents $envTEMP
 Replace-Numbered-Temp-Folders ($envTEMP) -Force -ErrorAction SilentlyContinue | Out-Null
 
+"Clearing environment folder TMP ..."
 CATE-Delete-Folder-Contents $envTMP
 Replace-Numbered-Temp-Folders ($envTMP) -Force -ErrorAction SilentlyContinue | Out-Null
 
+"Clearing $envSystemRoot\Temp ..."
 CATE-Delete-Folder-Contents ($envSystemRoot + "\Temp")
 Replace-Numbered-Temp-Folders ($envSystemRoot + "\Temp") -Force -ErrorAction SilentlyContinue | Out-Null
 
@@ -516,6 +526,8 @@ CATE-Delete-Folder-Contents ($envSystemRoot + "\PCHEALTH\ERRORREP\UserDumps")
 CATE-Delete-Folder-Contents ($envSystemRoot + "\minidump")
 
 CATE-Delete-Folder-Contents ($envSystemRoot + "\Downloaded Program Files")
+
+CATE-Delete-Folder-Contents ($envSystemRoot + "\SoftwareDistribution\Download")
 
 CATE-Delete-Folder-Contents ($envSystemRoot + "\LiveKernelReports")
 
