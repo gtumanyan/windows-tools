@@ -194,9 +194,6 @@ function Install-Contig {
 	Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 	$envWINDIR = [Environment]::GetEnvironmentVariable("WINDIR")
-	Remove-Item "$envWINDIR\Contig.exe" -ErrorAction SilentlyContinue | Out-Null
-	Remove-Item "$envWINDIR\Contig64.exe" -ErrorAction SilentlyContinue | Out-Null
-	Remove-Item "$envWINDIR\Eula.txt" -ErrorAction SilentlyContinue | Out-Null
 	Unzip "$TempPath\Contig.zip" "$envWINDIR"
 
     }
