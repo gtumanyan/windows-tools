@@ -161,7 +161,7 @@ Get-PhysicalDisk | ForEach-Object {
 function Unzip {
 	param([string]$zipfile, [string]$outpath)
 
-	[System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath) > $null
+	Expand-Archive -Path $zipfile -DestinationPath $outpath) -Force
 	}
 
 function Install-Contig {
