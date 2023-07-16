@@ -197,7 +197,7 @@ function Install-Contig {
 	Remove-Item "$envWINDIR\Contig.exe" -ErrorAction SilentlyContinue | Out-Null
 	Remove-Item "$envWINDIR\Contig64.exe" -ErrorAction SilentlyContinue | Out-Null
 	Remove-Item "$envWINDIR\Eula.txt" -ErrorAction SilentlyContinue | Out-Null
-	Unzip "$TempPath\Contig.zip" "$envWINDIR" -Force
+	Unzip "$TempPath\Contig.zip" "$envWINDIR"
 
     }
 	
