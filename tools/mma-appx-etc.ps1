@@ -65,7 +65,7 @@ Param()
 #
 # Speeds up Windows 8+/2012+, with special attention to 10 and up.  Specifically:
 #
-# 1. Set MMAgent for performance.  This includes Superfetch, prefetching,
+# 1. Set MMAgent for performance.  This includes Superfetch, 
 # memory compression, and page combining.  Far better to do these things,
 # than to just turn Superfetch off.
 #
@@ -126,8 +126,6 @@ Set-MMAgent -MaxOperationAPIFiles 8192 | Out-Null
 
 $MMAgentSetup = Get-MMAgent
 
-If (-Not $MMAgentSetup.ApplicationLaunchPrefetching)
-	{ Enable-MMAgent -ApplicationLaunchPrefetching | Out-Null }
 If (-Not ($WinVersionStr -Like "*Windows Server 201*"))
 	{
 	If (-Not $MMAgentSetup.ApplicationPrelaunch)
