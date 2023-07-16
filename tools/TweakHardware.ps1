@@ -298,7 +298,7 @@ function Remove-AllItemProperties
 Remove-AllItemProperties "HKCU:\SOFTWARE\microsoft\windows nt\currentversion\devices"
 
 Stop-Service Spooler
-Start-Service Spooler
+#Start-Service Spooler
 
 ""
 
