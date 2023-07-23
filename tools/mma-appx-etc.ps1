@@ -209,6 +209,14 @@ New-ItemProperty -Path . -Name AllowPrelaunch -Value 0 -PropertyType "DWord" -Fo
 CD HKCU:\Software\Policies\Microsoft\MicrosoftEdge\TabPreloader
 New-ItemProperty -Path . -Name AllowTabPreloading -Value 0 -PropertyType "DWord" -Force | Out-Null
 
+# AMD External Events Utility (probably want this one)
+if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinue)
+{
+	# Probably want this service running
+	Stop-Service -Name "AMD External Events Utility"
+	Set-Service -Name "AMD External Events Utility" -StartupType Disabled
+}
+
 "Disabling AutoGameMode..."
 
 CD HKCU:\Software\Microsoft\ | Out-Null
