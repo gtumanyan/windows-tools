@@ -234,6 +234,11 @@ New-ItemProperty -Path . -Name AllowAutoGameMode -Value 0 -PropertyType "DWord" 
 CD HKLM:\SYSTEM\CurrentControlSet\Services | Out-Null
 Set-ItemProperty -Path . -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
 
+# TrkWks: Distributed Link Tracking Client
+# Used by other programms
+# Links NTFS files within your computer or across a domain
+Set-Service -Name "TrkWks" -StartupType Manual
+
 "Disable Windows Compatibility Telemetry..."
 
 schtasks /Change /Disable /TN "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" | Out-Null
