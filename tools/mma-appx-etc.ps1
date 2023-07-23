@@ -214,7 +214,7 @@ if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinu
 {
 	# Probably want this service running
 	Stop-Service -Name "AMD External Events Utility"
-	Set-Service -Name "AMD External Events Utility" -StartupType Disabled
+	Set-Service -Name "AMD External Events Utility" -StartupType Manual
 }
 
 "Disabling AutoGameMode..."
