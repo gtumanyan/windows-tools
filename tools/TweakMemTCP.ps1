@@ -188,7 +188,11 @@ if ( 		($WinVersionStr -Like "*Windows Server 2008 R2*") 	`
 	Write-Output "Windows 7/2008R2 or later found.  Setting appropriately."
 	Write-Output ""
 	
-	# Original set
+	# Add Last Known Good Configuration to Boot Menu
+	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager" "BackUpCount" 	0x2
+ 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\LastKnownGood" "Enabled" 	0x1
+ 
+ 	# Original set
 	
 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "LargeSystemCache" 	0x1
 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "SystemPages" 		0x0
