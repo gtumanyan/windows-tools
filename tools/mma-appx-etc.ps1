@@ -134,7 +134,7 @@ If (-Not ($WinVersionStr -Like "*Windows Server 201*"))
 If (-Not $MMAgentSetup.MemoryCompression)
 	{ Enable-MMAgent -MemoryCompression | Out-Null }
 If (-Not $MMAgentSetup.OperationAPI)
-	{ Enable-MMAgent -OperationAPI | Out-Null }
+	{ Enable-MMAgent -OperationAPI -ErrorAction SilentlyContinue }
 If (-Not $MMAgentSetup.PageCombining)
 	{ Enable-MMAgent -PageCombining | Out-Null }
 	
