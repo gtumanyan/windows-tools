@@ -175,6 +175,8 @@ Remove-Package "*Disney*" | Out-Null
 "12/12..."
 Remove-Package "Microsoft.People" | Out-Null
 Remove-Package "Microsoft.WindowsFeedbackHub" | Out-Null
+"Removing Microsoft Edge..."
+iex(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)
 
 # The rest do not apply to Windows 8 / Server 2012 platforms.
 if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*Windows 8*") )
