@@ -189,8 +189,9 @@ if ( 		($WinVersionStr -Like "*Windows Server 2008 R2*") 	`
 	Write-Output ""
 	
 	# Add Last Known Good Configuration to Boot Menu
-	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager" "BackUpCount" 	0x2
- 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\LastKnownGood" "Enabled" 	0x1
+	Write-Output "Configuring boot settings"
+	bcdedit /set bootmenupolicy Legacy
+	bcdedit /set lastknowngood yes
  
  	# Original set
 	
