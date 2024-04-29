@@ -238,8 +238,7 @@ Set-ItemProperty -Path . -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyConti
 
 "Enabling Inline AutoComplete in File Explorer and Run Dialog..."
 CD HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer | Out-Null
-
-mkdir AutoComplete -Force  -ErrorAction SilentlyContinue | Out-Null
+mkdir AutoComplete -Force -ErrorAction SilentlyContinue | Out-Null
 CD AutoComplete
 New-ItemProperty -Path . -Name "Append Completion" -Value "Yes" -Force  -ErrorAction SilentlyContinue | Out-Null
 
