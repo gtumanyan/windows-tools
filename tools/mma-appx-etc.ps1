@@ -236,9 +236,10 @@ New-ItemProperty -Path . -Name AllowAutoGameMode -Value 0 -PropertyType "DWord" 
 CD HKLM:\SYSTEM\CurrentControlSet\Services | Out-Null
 Set-ItemProperty -Path . -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
 
-"Use Inline AutoComplete in File Explorer and Run Dialog"
+"Enabling Inline AutoComplete in File Explorer and Run Dialog"
 CD HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ | Out-Null
-mkdir AutoComplete
+mkdir AutoComplete -Force  -ErrorAction SilentlyContinue | Out-Null
+CD AutoComplete
 New-ItemProperty -Path . -Name "Append Completion" -Value "Yes" -Force  -ErrorAction SilentlyContinue | Out-Null
 
 "Disabling Geolocation Service autostart - If disabled, Windows won't be able to determine your location for certain apps..."
