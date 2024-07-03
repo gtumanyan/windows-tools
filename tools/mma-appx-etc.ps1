@@ -150,30 +150,39 @@ function Remove-Package {
 	Remove-AppxPackage -Allusers
 }
 
-"1/12..."
+"XboxApp..."
 Remove-Package "Microsoft.XboxApp" | Out-Null
-"2/12..."
+"XboxGamingOverlay..."
 Remove-Package "Microsoft.XboxGamingOverlay" | Out-Null
-"3/12..."
+"XboxIdentityProvider..."
 Remove-Package "Microsoft.XboxIdentityProvider" | Out-Null
-"4/12..."
+"Xbox.TCUI..."
 Remove-Package "Microsoft.Xbox.TCUI" | Out-Null
-"5/12..."
+"XboxSpeechToTextOverlay..."
 Remove-Package "Microsoft.XboxSpeechToTextOverlay" | Out-Null
-"6/12..."
+"WindowsCommunicationsApps..."
 Remove-Package "Microsoft.WindowsCommunicationsApps" | Out-Null
-"7/12..."
+"BingChat..."
+taskkill /f /im BingChatInstaller.EXE 2>&1 | Out-Null
+taskkill /f /im BCILauncher.EXE 2>&1 | Out-Null
+CD "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options" | Out-Null
+mkdir BingChatInstaller.EXE -Force -ErrorAction SilentlyContinue | Out-Null
+CD BingChatInstaller.EXE
+New-ItemProperty -Path . -Name Debugger -Value "%windir%\System32\taskkill.exe" -Force | Out-Null
+Remove-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce -Name !BCILauncher -Force | Out-Null
+"BingNews..."
 Remove-Package "Microsoft.BingNews" | Out-Null
-"8/12..."
+"BingWeather..."
 Remove-Package "Microsoft.BingWeather" | Out-Null
-"9/12..."
+"Advertising.Xaml..."
 Remove-Package "Microsoft.Advertising.Xaml" | Out-Null
-"10/12..."
+"Skype..."
 Remove-Package "*Microsoft.Skype*" | Out-Null
-"11/12..."
+"Disney..."
 Remove-Package "*Disney*" | Out-Null
-"12/12..."
+"People..."
 Remove-Package "Microsoft.People" | Out-Null
+"WindowsFeedbackHub..."
 Remove-Package "Microsoft.WindowsFeedbackHub" | Out-Null
 "Removing Microsoft Edge..."
 iex(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)
