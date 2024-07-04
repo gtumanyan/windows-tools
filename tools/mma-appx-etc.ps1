@@ -169,7 +169,7 @@ CD "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Opti
 mkdir BingChatInstaller.EXE -Force -ErrorAction SilentlyContinue | Out-Null
 CD BingChatInstaller.EXE
 New-ItemProperty -Path . -Name Debugger -Value "%windir%\System32\taskkill.exe" -Force | Out-Null
-Remove-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce -Name !BCILauncher -Force | Out-Null
+Get-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce | Remove-ItemProperty -Name !BCILauncher -Force -ErrorAction SilentlyContinue | Out-Null
 "BingNews..."
 Remove-Package "Microsoft.BingNews" | Out-Null
 "BingWeather..."
@@ -198,27 +198,6 @@ HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
 pushd HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon | Out-Null
 New-ItemProperty -Path . -Name RestartApps -Value 0 -PropertyType "DWord" -Force | Out-Null
 
-"Disabling prelaunch/preload of Microsoft Edge browser..."
-
-pushd HKCU:\Software\Policies\Microsoft\ | Out-Null
-
-mkdir MicrosoftEdge -Force | Out-Null
-mkdir MicrosoftEdge\Main -Force | Out-Null
-mkdir MicrosoftEdge\TabPreloader -Force | Out-Null
-CD HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main | Out-Null
-New-ItemProperty -Path . -Name AllowPrelaunch -Value 0 -PropertyType "DWord" -Force | Out-Null
-CD HKCU:\Software\Policies\Microsoft\MicrosoftEdge\TabPreloader
-New-ItemProperty -Path . -Name AllowTabPreloading -Value 0 -PropertyType "DWord" -Force | Out-Null
-
-CD HKLM:\Software\Policies\Microsoft\ | Out-Null
-
-mkdir MicrosoftEdge -Force | Out-Null
-mkdir MicrosoftEdge\Main -Force | Out-Null
-mkdir MicrosoftEdge\TabPreloader -Force | Out-Null
-CD HKCU:\Software\Policies\Microsoft\MicrosoftEdge\Main | Out-Null
-New-ItemProperty -Path . -Name AllowPrelaunch -Value 0 -PropertyType "DWord" -Force | Out-Null
-CD HKCU:\Software\Policies\Microsoft\MicrosoftEdge\TabPreloader
-New-ItemProperty -Path . -Name AllowTabPreloading -Value 0 -PropertyType "DWord" -Force | Out-Null
 
 # AMD External Events Utility (probably want this one)
 if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinue)
