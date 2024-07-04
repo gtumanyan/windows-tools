@@ -165,9 +165,9 @@ Remove-Package "Microsoft.WindowsCommunicationsApps" | Out-Null
 "BingChat..."
 taskkill /f /im BingChatInstaller.EXE 2>&1 | Out-Null
 taskkill /f /im BCILauncher.EXE 2>&1 | Out-Null
-Push-Location "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options" | Out-Null
+CD "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options" | Out-Null
 mkdir BingChatInstaller.EXE -Force -ErrorAction SilentlyContinue | Out-Null
-Set-Location BingChatInstaller.EXE
+CD BingChatInstaller.EXE
 New-ItemProperty -Path . -Name Debugger -Value "%windir%\System32\taskkill.exe" -Force | Out-Null
 Get-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce | Remove-ItemProperty -Name !BCILauncher -Force -ErrorAction SilentlyContinue | Out-Null
 "BingNews..."
@@ -195,7 +195,7 @@ if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*
 
 HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
 
-Set-Location HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon | Out-Null
+pushd HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon | Out-Null
 New-ItemProperty -Path . -Name RestartApps -Value 0 -PropertyType "DWord" -Force | Out-Null
 
 
@@ -209,25 +209,25 @@ if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinu
 
 "Disabling AutoGameMode..."
 
-Set-Location HKCU:\Software\Microsoft\ | Out-Null
+CD HKCU:\Software\Microsoft\ | Out-Null
 
 mkdir GameBar -Force  -ErrorAction SilentlyContinue | Out-Null
-Set-Location GameBar
+CD GameBar
 New-ItemProperty -Path . -Name AllowAutoGameMode -Value 0 -PropertyType "DWord" -Force  -ErrorAction SilentlyContinue | Out-Null
 
-Set-Location HKLM:\Software\Microsoft\ | Out-Null
+CD HKLM:\Software\Microsoft\ | Out-Null
 
 mkdir GameBar -Force  -ErrorAction SilentlyContinue | Out-Null
-Set-Location GameBar
+CD GameBar
 New-ItemProperty -Path . -Name AllowAutoGameMode -Value 0 -PropertyType "DWord" -Force  -ErrorAction SilentlyContinue | Out-Null
 
-Set-Location HKLM:\SYSTEM\CurrentControlSet\Services | Out-Null
+CD HKLM:\SYSTEM\CurrentControlSet\Services | Out-Null
 Set-ItemProperty -Path . -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
 
 "Enabling Inline AutoComplete in File Explorer and Run Dialog..."
-Set-Location HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer | Out-Null
+CD HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer | Out-Null
 mkdir AutoComplete -Force -ErrorAction SilentlyContinue | Out-Null
-Set-Location AutoComplete
+CD AutoComplete
 New-ItemProperty -Path . -Name "Append Completion" -Value "Yes" -Force  -ErrorAction SilentlyContinue | Out-Null
 
 "Disabling Geolocation Service autostart - If disabled, Windows won't be able to determine your location for certain apps..."
@@ -243,21 +243,20 @@ Set-Service -Name DiagTrack -StartupType Disabled 2>&1 | Out-Null
 
 "Disable Microsoft Consumer Experiences..."
 
-Set-Location HKLM:\SOFTWARE\Policies\Microsoft\Windows | Out-Null
+CD HKLM:\SOFTWARE\Policies\Microsoft\Windows | Out-Null
 mkdir CloudContent -Force  -ErrorAction SilentlyContinue | Out-Null
-Set-Location CloudContent
+CD CloudContent
 New-ItemProperty -Path . -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue | Out-Null
 
 "Device Metadata bug fix..."
 
-Set-Location "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" | Out-Null
+CD "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" | Out-Null
 If ((Get-ItemProperty -Path . -Name "DeviceMetadataServiceURL").DeviceMetadataServiceURL -eq "http://go.microsoft.com/fwlink/?LinkID=252669&clcid=0x409")
 {
 	Set-ItemProperty -Path . -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
-Pop-Location | Out-Null
-Pop-Location | Out-Null
+popd | Out-Null
 
 ""
 
