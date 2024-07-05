@@ -163,13 +163,13 @@ Remove-Package "Microsoft.XboxSpeechToTextOverlay" | Out-Null
 "WindowsCommunicationsApps..."
 Remove-Package "Microsoft.WindowsCommunicationsApps" | Out-Null
 "BingChat..."
-taskkill /f /im BingChatInstaller.EXE 2>&1 | Out-Null
-taskkill /f /im BCILauncher.EXE 2>&1 | Out-Null
-Push-Location "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options" | Out-Null
-mkdir BingChatInstaller.EXE -Force -ErrorAction SilentlyContinue | Out-Null
-Set-Location BingChatInstaller.EXE
-New-ItemProperty -Path . -Name Debugger -Value "%windir%\System32\taskkill.exe" -Force | Out-Null
-Get-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce | Remove-ItemProperty -Name !BCILauncher -Force -ErrorAction SilentlyContinue | Out-Null
+$BingChat = Get-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce -Name !BCILauncher 
+if ($BingChat)
+{
+	Get-Process -Name BingChatInstaller | Stop-Process -Force
+	Get-Process -Name BCILauncher | Stop-Process -Force
+	$BingChat | Remove-ItemProperty -Name !BCILauncher -Force 
+}
 "BingNews..."
 Remove-Package "Microsoft.BingNews" | Out-Null
 "BingWeather..."
@@ -191,14 +191,6 @@ iex "&{$(irm https://cdn.jsdelivr.net/gh/he3als/EdgeRemover@main/get.ps1)} -Unin
 if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*Windows 8*") )
 	{ exit 0 }
 	
-"Disabling autostart of user applications at logon..."
-
-HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
-
-Set-Location HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon | Out-Null
-New-ItemProperty -Path . -Name RestartApps -Value 0 -PropertyType "DWord" -Force | Out-Null
-
-
 # AMD External Events Utility (probably want this one)
 if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinue)
 {
@@ -208,27 +200,15 @@ if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinu
 }
 
 "Disabling AutoGameMode..."
-
-Set-Location HKCU:\Software\Microsoft\ | Out-Null
-
-mkdir GameBar -Force  -ErrorAction SilentlyContinue | Out-Null
-Set-Location GameBar
-New-ItemProperty -Path . -Name AllowAutoGameMode -Value 0 -PropertyType "DWord" -Force  -ErrorAction SilentlyContinue | Out-Null
-
-Set-Location HKLM:\Software\Microsoft\ | Out-Null
-
-mkdir GameBar -Force  -ErrorAction SilentlyContinue | Out-Null
-Set-Location GameBar
-New-ItemProperty -Path . -Name AllowAutoGameMode -Value 0 -PropertyType "DWord" -Force  -ErrorAction SilentlyContinue | Out-Null
-
-Set-Location HKLM:\SYSTEM\CurrentControlSet\Services | Out-Null
-Set-ItemProperty -Path . -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
+Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
 
 "Enabling Inline AutoComplete in File Explorer and Run Dialog..."
-Set-Location HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer | Out-Null
-mkdir AutoComplete -Force -ErrorAction SilentlyContinue | Out-Null
-Set-Location AutoComplete
-New-ItemProperty -Path . -Name "Append Completion" -Value "Yes" -Force  -ErrorAction SilentlyContinue | Out-Null
+if (-not (Test-Path -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete))
+			{
+				New-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Force
+			}
+			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force 
+			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force 
 
 "Disabling Geolocation Service autostart - If disabled, Windows won't be able to determine your location for certain apps..."
 Set-Service -Name "lfsvc" -StartupType Manual
@@ -242,22 +222,13 @@ Stop-Service -Name "DiagTrack" 2>&1 | Out-Null
 Set-Service -Name DiagTrack -StartupType Disabled 2>&1 | Out-Null
 
 "Disable Microsoft Consumer Experiences..."
-
-Set-Location HKLM:\SOFTWARE\Policies\Microsoft\Windows | Out-Null
-mkdir CloudContent -Force  -ErrorAction SilentlyContinue | Out-Null
-Set-Location CloudContent
-New-ItemProperty -Path . -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue | Out-Null
+New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue | Out-Null
 
 "Device Metadata bug fix..."
-
-Set-Location "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" | Out-Null
-If ((Get-ItemProperty -Path . -Name "DeviceMetadataServiceURL").DeviceMetadataServiceURL -eq "http://go.microsoft.com/fwlink/?LinkID=252669&clcid=0x409")
+If ((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL").DeviceMetadataServiceURL -eq "http://go.microsoft.com/fwlink/?LinkID=252669&clcid=0x409")
 {
-	Set-ItemProperty -Path . -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force -ErrorAction SilentlyContinue | Out-Null
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force -ErrorAction SilentlyContinue | Out-Null
 }
-
-Pop-Location | Out-Null
-Pop-Location | Out-Null
 
 ""
 
