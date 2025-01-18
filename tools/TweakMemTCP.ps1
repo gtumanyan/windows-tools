@@ -209,12 +209,11 @@ if ( 		($WinVersionStr -Like "*Windows Server 2008 R2*") 	`
 	# Newer set, TCP only
 	
 	Set-NetOffloadGlobalSetting -Chimney Disabled| Out-Null
-	netsh int tcp set global autotuninglevel=disabled | Out-Null
-	netsh int tcp set supplemental custom congestionprovider=none | Out-Null
-	netsh int tcp set global ecncapability=disabled | Out-Null
-	netsh int tcp set global timestamps=disabled | Out-Null
-	netsh int tcp set supplemental custom congestionprovider = ctcp | Out-Null
+	netsh int tcp set supplemental internet congestionprovider=cubic | Out-Null # Controls the congestion provider. Def: cubic newreno dctcp
+
+	netsh int tcp set global autotuninglevel=disabled | Out-Null # Fix the receive window at its default value
 	netsh int tcp set global ecncapability=enabled | Out-Null
+	netsh int tcp set global timestamps=disabled | Out-Null		 # Disable RFC 1323 timestamps.
 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableTCPA" 0x1
 	}
 else {
