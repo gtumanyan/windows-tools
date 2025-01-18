@@ -204,7 +204,7 @@ if ( 		($WinVersionStr -Like "*Windows Server 2008 R2*") 	`
 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "Size" 		0x00000003
 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "TcpTimedWaitDelay" 		0x0000001e
 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "StrictTimeWaitSeqCheck" 	0x00000001
-	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" 			0x00007fff
+	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" 			0x0000fffe
 	
 	# Newer set, TCP only
 	
