@@ -209,9 +209,7 @@ if ( 		($WinVersionStr -Like "*Windows Server 2008 R2*") 	`
 	
 	# Newer set, TCP only
 	
-	Set-NetOffloadGlobalSetting -Chimney Disabled | Out-Null
-	netsh int tcp set global rss=disabled | Out-Null
-	netsh int ip set global taskoffload=disabled | Out-Null
+	Set-NetOffloadGlobalSetting -Chimney Disabled| Out-Null
 	netsh int tcp set global autotuninglevel=disabled | Out-Null
 	netsh int tcp set supplemental custom congestionprovider=none | Out-Null
 	netsh int tcp set global ecncapability=disabled | Out-Null
