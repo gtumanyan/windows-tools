@@ -184,6 +184,8 @@ Remove-Package "*Disney*" | Out-Null
 Remove-Package "Microsoft.People" | Out-Null
 "WindowsFeedbackHub..."
 Remove-Package "Microsoft.WindowsFeedbackHub" | Out-Null
+
+Write-Information -MessageData "" -InformationAction Continue
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
 
