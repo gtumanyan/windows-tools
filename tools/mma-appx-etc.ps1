@@ -217,15 +217,13 @@ if (-not (Test-Path -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explor
 			{
 				New-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Force
 			}
-			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force 
-			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force 
+			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force | Out-Null
+			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force | Out-Null
 
 "Disabling Geolocation Service autostart - If disabled, Windows won't be able to determine your location for certain apps..."
 Set-Service -Name "lfsvc" -StartupType Manual
 
 "Disable Windows Compatibility Telemetry..."
-
-schtasks /Change /Disable /TN "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" | Out-Null
 taskkill /f /im compattelrunner.exe 2>&1 | Out-Null
 
 Stop-Service -Name "DiagTrack" 2>&1 | Out-Null
