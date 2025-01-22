@@ -202,6 +202,16 @@ if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinu
 "Disabling AutoGameMode..."
 Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
 
+"Enabling Show All Tray Icons..."
+if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
+	# Pre-Windows-11
+	Set-ItemProperty -LiteralPath 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'EnableAutoTray' -Type 'DWord' -Value 0 -Force;
+} else {
+	# Windows 11
+	$RegPathControlPanelNotify = ('HKCU:\Control Panel\NotifyIconSettings')
+	Foreach ($Item in Get-ChildItem $RegPathControlPanelNotify){ Set-ItemProperty -Path $Item.PSPath -Name "IsPromoted" -Value "1" -Type DWord }
+}
+
 "Enabling Inline AutoComplete in File Explorer and Run Dialog..."
 if (-not (Test-Path -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete))
 			{
