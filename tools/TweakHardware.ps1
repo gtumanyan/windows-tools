@@ -98,7 +98,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     "Running elevated; good."
     ""
     } else {
-    "Not running as elevated.  Starting elevated shell."
+    write-host " Requesting ADMIN rights.. " -fore 0 -back 0xE ; sleep 2
     Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file $PSCommandPath"
     return "Done. This one will now exit."
     ""
@@ -145,8 +145,9 @@ function Set-NIC-Property-Highest {
 	try {
 		$NICProperty = Get-NetAdapterAdvancedProperty -Name $NICName -DisplayName $PropertyName  -ErrorAction Stop
 		$ValidValues = (Get-NetAdapterAdvancedProperty -Name $NICName -DisplayName $PropertyName).ValidDisplayValues
-		Set-NIC-Property $NICName $PropertyName $ValidValues[-1]
-		# $ValidValues[-1] sets the last one in the list, i.e., the highest
+		$largest = ($validvalues | Measure-Object -Maximum).Maximum
+		Set-NIC-Property $NICName $PropertyName $largest
+		# On Killer NICs .ValidDisplayValues returnes in descending order, so we have to find largest value
 		}
 	catch {
 		return
