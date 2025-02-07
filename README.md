@@ -12,19 +12,19 @@ Lots of software uses Microsoft VC++ redistributables.  They get updated fairly 
 
 ## mma-appx-etc
 
-There is something called MMAgent, lots of little applets called APPX's, the Edge browser, and something called Game Mode.  Application launch prefetching, page combining, memory compression, and application prelaunching have all been rolled into MMAgent, and properly configured, this can improve overall OS performance quite nicely: disabling Superfetch can sometimes give a bit of performance, but configuring it nicely often gains a lot, especially with an SSD.  There are many APPX items which eat resources and confuse end users; deleting these (e.g., the consumer-grade email app) can prevent many issues.  The Edge browser is preloaded at boot by default, taking RAM in hidden fashion; disabling this can help a good bit, and has not been noticeable to users so far.  And Game Mode is something hidden which, by default, runs all the time, sits in the background, tries to guess when any user is playing a game whose video is worth recording for sharing with other gamers, and does the recording whether its guess is correct or not...all of which takes resources, and is therefore well worth turning off!  The above are all implemented in [mma-appx-etc](https://github.com/gtumanyan/windows-tools/raw/master/tools/mma-appx-etc.ps1) for your operating pleasure.
+There is something called MMAgent, lots of little applets called APPX's, the Edge browser, and something called Game Mode.  Application launch prefetching, page combining, memory compression, and application prelaunching have all been rolled into MMAgent and properly configured, this can improve overall OS performance quite nicely: disabling Superfetch can sometimes give a bit of performance, but configuring it nicely often gains a lot, especially with an SSD.  Many APPX items eat resources and confuse end-users; deleting these (e.g., the consumer-grade email app) can prevent many issues.  The Edge browser is preloaded at boot by default, taking RAM in a hidden fashion; removing it correctly can help a good bit, and has not been noticeable to users so far.  And Game Mode is something hidden which, by default, runs all the time, sits in the background, tries to guess when any user is playing a game whose video is worth recording for sharing with other gamers, and does the recording whether its guess is correct or not...all of which takes resources, and is therefore well worth turning off!  The above are all implemented in [mma-appx-etc](https://github.com/gtumanyan/windows-tools/raw/master/tools/mma-appx-etc.ps1) for your operating pleasure.
 
 ## TweakMemTCP
 
-[StorageCraft has published](https://support.storagecraft.com/s/article/Tuning-Guide-for-StorageCraft-Software-on-Servers?language=en_US) some rather marvelous OS tweaks for overall performance, memory management and TCP networking.  These and others are implemented in [TweakMemTCP](https://github.com/gtumanyan/windows-tools/raw/master/tools/TweakMemTCP.ps1).  They have been working very well.
+[StorageCraft has published](https://support.storagecraft.com/s/article/Tuning-Guide-for-StorageCraft-Software-on-Servers?language=en_US) some rather marvelous OS tweaks for overall performance, memory management, and TCP networking.  These and others are implemented in [TweakMemTCP](https://github.com/gtumanyan/windows-tools/raw/master/tools/TweakMemTCP.ps1).  They have been working very well.
 
 ## RunDevNodeClean
 
-DevNodeClean is a Microsoft-provided utility which clears certain registry items, ones which are created when USB flash drives are plugged in and removed, when machines are virtualized or devirtualized, and many other operations.  These registry items pile up over time, we have seen some older Windows 7 desktops with hundreds of them, and they slow down Windows File Explorer and file management in general quite a bit.  [RunDevNodeClean](https://github.com/gtumanyan/windows-tools/raw/master/tools/RunDevNodeClean.ps1) downloads the utility from Microsoft, unpacks it, runs the appropriate (32-bit or 64-bit) binary, and then cleans up after itself.
+DevNodeClean is a Microsoft-provided utility that clears certain registry items, ones which are created when USB flash drives are plugged in and removed when machines are virtualized or devirtualized, and many other operations.  These registry items pile up over time, we have seen some older Windows 7 desktops with hundreds of them, and they slow down Windows File Explorer and file management in general quite a bit.  [RunDevNodeClean](https://github.com/gtumanyan/windows-tools/raw/master/tools/RunDevNodeClean.ps1) downloads the utility from Microsoft, unpacks it, runs the appropriate (32-bit or 64-bit) binary, and then cleans up after itself.
 
 ## wt_removeGhosts: remove ghost devices from Windows
 
-Over time, Windows accumulates 'ghost devices', devices which can show up in Device Manager as transparent because they aren't actually there, but things are set up if they are plugged in again.  This applies to anything and everything, including motherboard device objects replaced during driver updates, VSS items, USB sticks inserted and removed, really anything at all.  This contributes greatly to slowdown of an old OS install image.  And removeGhosts removes them all.  This is not Ponderworthy code, but it's great stuff.  We run our own fork of it just in case.
+Over time, Windows accumulates 'ghost devices', devices that can show up in Device Manager as transparent because they aren't actually there, but things are set up if they are plugged in again.  This applies to anything and everything, including motherboard device objects replaced during driver updates, VSS items, USB sticks inserted and removed, really anything at all.  This contributes greatly to a slowdown of an old OS install image.  And removeGhosts removes them all.  This is not Ponderworthy code, but it's great stuff.  We run our own fork of it just in case.
 
 ## TweakDrives: Tweak NTFS for Performance and Reliability
 
@@ -70,4 +70,10 @@ One thing discovered along the way, is even in XP there was a user profile calle
 ## TweakHardware: turn off much USB power management, and optimize NICs for performance
 
 By default, USB root hubs turn themselves off when idle, which has the effect of disabling many USB devices plugged in.  TweakHardware disables as much of the automatic shutoff as it can (not all, yet).  It also optimizes NICs for performance.  It can cause NICs to pause briefly.
+
+
+## Donations
+
+You can support my work on maintaining and further developing the script by <a href="https://boosty.to/snappydriverinstaller/donate"><img src="https://boosty.to/favicon.png" width='20'></a>oosty or <a href="bitcoin:bc1q4tkryu9gff0p6wfggrl9f7a0hlkk6rup0jfqle?message=support%20SDI"><img src=https://bitcoin.org/favicon.png  alt="BTC" width='20'/>itcoin
+
 
