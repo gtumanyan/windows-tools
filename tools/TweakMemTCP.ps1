@@ -213,7 +213,7 @@ if ( 		($WinVersionStr -Like "*Windows Server 2008 R2*") 	`
 
 	netsh int tcp set global autotuninglevel=disabled | Out-Null # Fix the receive window at its default value
 	netsh int tcp set global ecncapability=enabled | Out-Null
-	netsh int tcp set global timestamps=disabled | Out-Null		 # Disable RFC 1323 timestamps.
+	netsh int tcp set global timestamps=allowed | Out-Null		 # Enable RFC 1323 timestamps
 	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableTCPA" 0x1
 	}
 else {
