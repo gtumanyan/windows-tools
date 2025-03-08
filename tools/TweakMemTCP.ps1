@@ -191,9 +191,10 @@ setupDWORD "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched" "NonBestEffortLimi
 
 setupDWORD "HKLM:\System\CurrentControlSet\Services\Tcpip\QoS" "Do not use NLA" "1"
 	
-setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVewrsion\Multimedia\SystemProfile" "Network ThrottlingIndex" "0xffffffff"
+# Disabling Network Throttling increases DPC latency https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
+# setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" "0xffffffff"
 
-setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVewrsion\Multimedia\SystemProfile" "SystemResponsiveness" "10"
+setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "SystemResponsiveness" "10"
 	
 	
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\ServicesTcpip\Parameters" "EnableTCPA" 1
