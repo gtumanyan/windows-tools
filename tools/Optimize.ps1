@@ -1,14 +1,16 @@
-# Check if the script is running with elevated privileges
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host "Script is not running with elevated privileges. Restarting as Administrator..."
 
-    # Start a new elevated PowerShell process and wait for it to complete
-    $process = Start-Process powershell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File", "`"$PSCommandPath`"" -Verb RunAs -PassThru
-    $process.WaitForExit()
-    
-    # Exit the non-elevated instance after the elevated process completes
-    exit
-}
+if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+    {
+    "Running elevated; good."
+    ""
+    } else {
+    "Not running as elevated.  Starting elevated shell."
+    Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file $PSCommandPath"
+    return "Done. This one will now exit."
+    ""
+    }
+	
+Set-ExecutionPolicy Bypass -Scope Process -Force
 
 # Set TLS 1.2 for secure connections
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
