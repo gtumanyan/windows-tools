@@ -1,9 +1,12 @@
-# Check if the script is running with elevated privileges
-if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Not running as elevated. Starting elevated shell."
-    # Start a new elevated PowerShell process and exit the non-elevated instance
-		Start-Process -FilePath "powershell" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+# Check if script is running as admin
+$adminCheck = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+$isAdmin = $adminCheck.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if (-Not $isAdmin) {
+    Write-Host "Not running as elevated. Restarting with admin privileges..."
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
     Read-Host "Press Enter to exit"
+    exit
 } else {
     Write-Host "Running elevated; good."
 }
