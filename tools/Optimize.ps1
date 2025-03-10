@@ -4,9 +4,9 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     ""
 } else {
     "Not running as elevated. Starting elevated shell."
+    # Start a new elevated PowerShell process and exit the non-elevated instance
     Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file `"$PSCommandPath`""
-    return "Done. This one will now exit."
-    ""
+    exit
 }
 
 # Set execution policy for the current process
