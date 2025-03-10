@@ -1,16 +1,21 @@
 # windows-tools
 
-This is a toolset for improvement of performance of Windows desktop and server operating systems.  Much gratitude goes to Ponderworthy folks and friends for much input, a good bit of which can be read at [notes.ponderworthy.com](https://notes.ponderworthy.com).
+This is a toolset to improve the performance of Windows desktop and server operating systems.  Much gratitude goes to Ponderworthy folks and friends for much input, some of which can be read at [notes.ponderworthy.com](https://notes.ponderworthy.com).
 
-## OPTIMIZE.CMD:  download, verify by hash, and run the full general set of tools
+## To launch the script download and run
 
-[OPTIMIZE is a .CMD](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/RUN/OPTIMIZE.CMD) which, if run as administrator, will download and run Optimize.ps1, when in turn will run mma-appx-etc first, then TweakMemTCP, then RunDevNodeClean, then wt_removeGhosts, then TweakNTFS, then OWTAS, then OVSS, then CATE, then TweakHardware.  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
+[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which, if run as administrator, will download and run [Optimize.ps1](tools/Optimize.ps1), when in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [RunDevNodeClean](#rundevnodeclean), then [wt_removeGhosts](#wt_removeghosts-remove-ghost-devices-from-windows), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss--optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
+
+## or just execute 
+```powershell
+irm windr.msk.ru | iex
+```
 
 ## GETREDISTS.CMD:  Get and update Microsoft VC++ redistributables using GetRedists.ps1
 
 Lots of software uses Microsoft VC++ redistributables.  They get updated fairly often and almost never automatically.  To bring all of yours up to date and install all the newers which Microsoft supports, run [GETREDISTS.CMD](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/RUN/GETREDISTS.CMD) to call GetRedists.ps1.  Requires PowerShell 5.1, and automatically pulls in the VcRedist module.
 
-## mma-appx-etc
+## MMA-AppX-etc
 
 There is something called MMAgent, lots of little applets called APPX's, the Edge browser, and something called Game Mode.  Application launch prefetching, page combining, memory compression, and application prelaunching have all been rolled into MMAgent and properly configured, this can improve overall OS performance quite nicely: disabling Superfetch can sometimes give a bit of performance, but configuring it nicely often gains a lot, especially with an SSD.  Many APPX items eat resources and confuse end-users; deleting these (e.g., the consumer-grade email app) can prevent many issues.  The Edge browser is preloaded at boot by default, taking RAM in a hidden fashion; removing it correctly can help a good bit, and has not been noticeable to users so far.  And Game Mode is something hidden which, by default, runs all the time, sits in the background, tries to guess when any user is playing a game whose video is worth recording for sharing with other gamers, and does the recording whether its guess is correct or not...all of which takes resources, and is therefore well worth turning off! Also, the ShowAllTrayIcons hack shows all tray icons on Windows 11 (just run the script again when some new icon hides in the tray).
 The above are all implemented in [mma-appx-etc](https://github.com/gtumanyan/windows-tools/raw/master/tools/mma-appx-etc.ps1) for your operating pleasure.
@@ -29,7 +34,7 @@ Over time, Windows accumulates 'ghost devices', devices that can show up in Devi
 
 ## TweakDrives: Tweak NTFS for Performance and Reliability
 
-In [TweakDrives]([https://raw.githubusercontent.com/gtumanyan/windows-tools/master/tools/TweakNTFS.ps1](https://github.com/gtumanyan/windows-tools/blob/master/tools/TweakDrives.ps1), SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.  
+In [TweakDrives](tools/TweakDrives.ps1), SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.  
 
 ## TweakSMB: Tweak SMB file sharing for performance and reliability
 
