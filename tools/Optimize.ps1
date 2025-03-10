@@ -6,7 +6,7 @@ if (-Not $isAdmin) {
     Write-Host "Not running as elevated. Restarting with admin privileges..."
     
     # Relaunch script in an elevated PowerShell session
-    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    Start-Process powershell.exe -ArgumentList "-NoExit -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
 
     # Prevent the non-elevated window from closing too quickly
     Read-Host "Press Enter to exit..."
