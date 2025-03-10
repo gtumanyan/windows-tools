@@ -74,7 +74,7 @@ Param()
 # the consumer-grade email/calendar/contacts apps, several Xbox gaming items,
 # et cetera.
 #
-# 3. Turns off preloading of the Edge browser.
+# 3. Removes Edge browser.
 # 
 # 4. Turns off Game Mode.
 #
