@@ -1,17 +1,20 @@
-# Check if script is running as admin
+# Check if the script is running as Administrator
 $adminCheck = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
 $isAdmin = $adminCheck.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 if (-Not $isAdmin) {
     Write-Host "Not running as elevated. Restarting with admin privileges..."
+    
+    # Relaunch script in an elevated PowerShell session
     Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
-    Read-Host "Press Enter to exit"
+
+    # Prevent the non-elevated window from closing too quickly
+    Read-Host "Press Enter to exit..."
     exit
-} else {
-    Write-Host "Running elevated; good."
 }
 
-"Script started at $(Get-Date)" | Out-File C:\temp\optimize_log.txt -Append
+# If elevated, continue script execution
+Write-Host "Running as Administrator..."
 Read-Host "Press Enter to exit..."
 
 try {
