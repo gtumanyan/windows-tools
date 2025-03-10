@@ -18,7 +18,7 @@ Lots of software uses Microsoft VC++ redistributables.  They get updated fairly 
 ## MMA-AppX-etc
 
 There is something called MMAgent, lots of little applets called APPX's, the Edge browser, and something called Game Mode.  Application launch prefetching, page combining, memory compression, and application prelaunching have all been rolled into MMAgent and properly configured, this can improve overall OS performance quite nicely: disabling Superfetch can sometimes give a bit of performance, but configuring it nicely often gains a lot, especially with an SSD.  Many APPX items eat resources and confuse end-users; deleting these (e.g., the consumer-grade email app) can prevent many issues.  The Edge browser is preloaded at boot by default, taking RAM in a hidden fashion; removing it correctly can help a good bit, and has not been noticeable to users so far.  And Game Mode is something hidden which, by default, runs all the time, sits in the background, tries to guess when any user is playing a game whose video is worth recording for sharing with other gamers, and does the recording whether its guess is correct or not...all of which takes resources, and is therefore well worth turning off! Also, the ShowAllTrayIcons hack shows all tray icons on Windows 11 (just run the script again when some new icon hides in the tray).
-The above are all implemented in [mma-appx-etc](https://github.com/gtumanyan/windows-tools/raw/master/tools/mma-appx-etc.ps1) for your operating pleasure.
+The above are all implemented in [mma-appx-etc](tools/mma-appx-etc.ps1) for your operating pleasure.
 
 ## TweakMemTCP
 
