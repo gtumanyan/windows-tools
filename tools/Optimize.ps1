@@ -15,7 +15,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
     $script = if ($PSCommandPath) {
         "& { & `'$($PSCommandPath)`' $($argList -join ' ') }"
     } else {
-        "&([ScriptBlock]::Create((irm https://github.com/ChrisTitusTech/winutil/releases/latest/download/winutil.ps1))) $($argList -join ' ')"
+        "&([ScriptBlock]::Create((irm https://github.com/gtumanyan/windows-tools/raw/master/tools/Optimize.ps1))) $($argList -join ' ')"
     }
 
     $powershellCmd = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
