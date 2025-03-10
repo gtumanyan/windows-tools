@@ -12,6 +12,7 @@ if (-Not $isAdmin) {
 }
 
 "Script started at $(Get-Date)" | Out-File C:\temp\optimize_log.txt -Append
+Read-Host "Press Enter to exit..."
 
 try {
     Write-Host "Setting execution policy..."
