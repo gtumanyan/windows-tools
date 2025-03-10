@@ -1,11 +1,14 @@
-# Restart the script with elevation if needed
+# Check if the script is running with elevated privileges
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     Write-Host "Script is not running with elevated privileges. Restarting as Administrator..."
-    Start-Process powershell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File", "`"$PSCommandPath`"" -Verb RunAs
-	exit
-}
 
-Set-ExecutionPolicy Bypass -Scope Process -Force
+    # Start a new elevated PowerShell process and wait for it to complete
+    $process = Start-Process powershell.exe -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File", "`"$PSCommandPath`"" -Verb RunAs -PassThru
+    $process.WaitForExit()
+    
+    # Exit the non-elevated instance after the elevated process completes
+    exit
+}
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12;
 
