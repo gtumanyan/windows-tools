@@ -1,19 +1,11 @@
 # Check if the script is running with elevated privileges
-if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host "Running elevated; good."
-    ""
-} else {
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Not running as elevated. Starting elevated shell."
-    # Start a new elevated PowerShell process
-    $newProcess = Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file `"$PSCommandPath`"" -PassThru
-    if ($newProcess) {
-        Write-Host "Elevated process started successfully."
-    } else {
-        Write-Host "Failed to start elevated process."
-    }
-    Write-Host "Press Enter to exit..."
-    Read-Host
+    # Start a new elevated PowerShell process and exit the non-elevated instance
+    Start-Process powershell -ArgumentList "-NoProfile -NoExit -File `"$PSCommandPath`"" -Verb RunAs
     exit
+} else {
+    Write-Host "Running elevated; good."
 }
 
 try {
@@ -21,7 +13,7 @@ try {
     Set-ExecutionPolicy Bypass -Scope Process -Force
 
     Write-Host "Setting TLS 1.2 for secure connections..."
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
     Write-Host "Importing BitsTransfer module..."
     Import-Module BitsTransfer
@@ -41,11 +33,11 @@ try {
     )
 
     # Download and run each script
-    ForEach ($ps_script in $ps_script_list) {
+    foreach ($ps_script in $ps_script_list) {
         $download_url = "https://github.com/gtumanyan/windows-tools/raw/master/tools/$ps_script"
 
         Write-Host "--- Downloading $ps_script... ---"
-        Invoke-WebRequest -Uri $download_url -Outfile ".\$ps_script"
+        Invoke-WebRequest -Uri $download_url -OutFile ".\$ps_script"
         
         $run_script = ".\$ps_script"
 
