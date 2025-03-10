@@ -2,11 +2,13 @@
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Not running as elevated. Starting elevated shell."
     # Start a new elevated PowerShell process and exit the non-elevated instance
-    Start-Process powershell -ArgumentList "-NoProfile -NoExit -File `"$PSCommandPath`"" -Verb RunAs
-    exit
+		Start-Process -FilePath "powershell" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    Read-Host "Press Enter to exit"
 } else {
     Write-Host "Running elevated; good."
 }
+
+"Script started at $(Get-Date)" | Out-File C:\temp\optimize_log.txt -Append
 
 try {
     Write-Host "Setting execution policy..."
