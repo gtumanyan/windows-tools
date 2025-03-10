@@ -31,7 +31,6 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 }
 # If elevated, continue script execution
 Write-Host "Running as Administrator..."
-Read-Host "Press Enter to exit..."
 
 try {
     Write-Host "Setting TLS 1.2 for secure connections..."
