@@ -33,12 +33,8 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 Write-Host "Running as Administrator..."
 
 try {
-    Write-Host "Setting TLS 1.2 for secure connections..."
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-    Write-Host "Importing BitsTransfer module..."
+		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12;
     Import-Module BitsTransfer
-
     # List of scripts to download and run
     $ps_script_list = @(
         'mma-appx-etc.ps1',
@@ -69,7 +65,7 @@ try {
 
     Write-Host "Script completed successfully."
 } catch {
-    Write-Host "An error occurred: $_"
+    Write-Host "An error occurred: $_" -Foregroundcolor Red
 }
 
 Write-Host "Press Enter to exit..."
