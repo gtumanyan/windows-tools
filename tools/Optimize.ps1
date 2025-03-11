@@ -29,6 +29,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 
     break
 }
+
 # If elevated, continue script execution
 Write-Host "Running as Administrator..."
 Set-ExecutionPolicy Bypass -Scope Process -Force
