@@ -204,7 +204,7 @@ if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinu
 "Disabling AutoGameMode..."
 Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
 
-"Enabling Show All Tray Icons..."
+"Showing All Tray Icons..."
 if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
 	# Pre-Windows-11
 	Set-ItemProperty -LiteralPath 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'EnableAutoTray' -Type 'DWord' -Value 0 -Force;
