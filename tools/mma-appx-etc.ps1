@@ -1,11 +1,11 @@
 
 <#PSScriptInfo
 
-.VERSION 2.81
+.VERSION 2.81+
 
 .GUID 5cc3176c-2e44-40d7-8ead-592e4e2e3665
 
-.AUTHOR Jonathan E. Brickman
+.AUTHOR Jonathan E. Brickman & Gregory G. Tumanyan
 
 .COMPANYNAME Ponderworthy Music
 
@@ -207,7 +207,7 @@ Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Val
 "Showing All Tray Icons..."
 if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
 	# Pre-Windows-11
-	Set-ItemProperty -LiteralPath 'Registry::HKU\DefaultUser\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'EnableAutoTray' -Type 'DWord' -Value 0 -Force;
+	Set-ItemProperty -LiteralPath 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'EnableAutoTray' -Type 'DWord' -Value 0 -Force
 } else {
 	# Windows 11
 	$RegPathControlPanelNotify = ('HKCU:\Control Panel\NotifyIconSettings')
