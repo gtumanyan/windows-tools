@@ -217,7 +217,7 @@ Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinu
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue | Out-Null
 	
 # enable BBR2 Congestion Control Provider
-try {Set-NetTCPSetting -SettingName "*" -CongestionProvider "bbr2"} catch {Write-Warning "BBR2 absent, skipping Congestion Control Provider change}
+try {Set-NetTCPSetting -SettingName "*" -CongestionProvider "bbr2"} catch {Write-Warning "BBR2 absent, skipping Congestion Control Provider change"}
 
 # HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\<<<GUIDs>>>
 # TcpAckFrequency <delete value>
