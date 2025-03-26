@@ -210,18 +210,14 @@ Enable-NetAdapterChecksumOffload -Name * -ErrorAction SilentlyContinue | Out-Nul
 	
 Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyContinue | Out-Null
 Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue | Out-Null
-try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skippin..."}
+try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skipping..."}
 Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 2 -ErrorAction SilentlyContinue | Out-Null
 Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency disabled -ErrorAction SilentlyContinue | Out-Null
 Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinue | Out-Null
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue | Out-Null
 	
 # enable BBR2 Congestion Control Provider
-netsh int tcp set supplemental Template=Internet CongestionProvider=bbr2
-netsh int tcp set supplemental Template=Datacenter CongestionProvider=bbr2
-netsh int tcp set supplemental Template=Compat CongestionProvider=bbr2
-netsh int tcp set supplemental Template=DatacenterCustom CongestionProvider=bbr2
-netsh int tcp set supplemental Template=InternetCustom CongestionProvider=bbr2
+try {Set-NetTCPSetting -SettingName "*" -CongestionProvider "bbr2"} catch {Write-Waning "BBR2 absent, skipping Congestion Control Provider change}
 
 # HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\<<<GUIDs>>>
 # TcpAckFrequency <delete value>
