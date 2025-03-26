@@ -200,22 +200,28 @@ setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\System
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\ServicesTcpip\Parameters" "EnableTCPA" 1
 	
 "Set-NetTCPSetting items etc..."
-	
-Set-NetTCPSetting -SettingName internet -AutoTuningLevelLocal normal -ErrorAction SilentlyContinue | Out-Null
+
+# TCP Window Auto-Tuning does NOT cause bufferbloat, DONT disable to increase score
+Set-NetTCPSetting -SettingName "*" -AutoTuningLevelLocal normal -ErrorAction SilentlyContinue | Out-Null
 Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing disabled -ErrorAction SilentlyContinue | Out-Null
 Set-NetOffloadGlobalSetting -ReceiveSideScaling enabled -ErrorAction SilentlyContinue | Out-Null
 Disable-NetAdapterLso -Name * -ErrorAction SilentlyContinue | Out-Null
 Enable-NetAdapterChecksumOffload -Name * -ErrorAction SilentlyContinue | Out-Null
 	
-Set-NetTCPSetting -SettingName internet -EcnCapability enabled -ErrorAction SilentlyContinue | Out-Null
+Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyContinue | Out-Null
 Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName internet -Timestamps allowed -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName internet -MaxSynRetransmissions 2 -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName internet -NonSackRttResiliency disabled -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName internet -InitialRto 2000 -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName internet -MinRto 300 -ErrorAction SilentlyContinue | Out-Null
+try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skippin..."}
+Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 2 -ErrorAction SilentlyContinue | Out-Null
+Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency disabled -ErrorAction SilentlyContinue | Out-Null
+Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinue | Out-Null
+Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue | Out-Null
 	
-netsh int tcp set supplemental internet congestionprovider=CUBIC
+# enable BBR2 Congestion Control Provider
+netsh int tcp set supplemental Template=Internet CongestionProvider=bbr2
+netsh int tcp set supplemental Template=Datacenter CongestionProvider=bbr2
+netsh int tcp set supplemental Template=Compat CongestionProvider=bbr2
+netsh int tcp set supplemental Template=DatacenterCustom CongestionProvider=bbr2
+netsh int tcp set supplemental Template=InternetCustom CongestionProvider=bbr2
 
 # HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\<<<GUIDs>>>
 # TcpAckFrequency <delete value>
