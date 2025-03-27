@@ -189,10 +189,6 @@ Write-Information -MessageData "" -InformationAction Continue
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
 
-# The rest do not apply to Windows 8 / Server 2012 platforms.
-if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*Windows 8*") )
-	{ exit 0 }
-	
 # AMD External Events Utility (probably want this one)
 if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinue)
 {
@@ -201,8 +197,16 @@ if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinu
 	Set-Service -Name "AMD External Events Utility" -StartupType Manual
 }
 
-"Disabling AutoGameMode..."
-Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
+"Enabling Inline AutoComplete in File Explorer and Run Dialog..."
+if (-not (Test-Path -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete))
+			{
+				New-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Force
+			}
+			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force | Out-Null
+			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force | Out-Null
+
+"Removing IDMan autorun entry..." # Didn't find any decent portable (
+Remove-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force -ErrorAction Ignore
 
 "Showing All Tray Icons..."
 if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
@@ -214,13 +218,15 @@ if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
 	Foreach ($Item in Get-ChildItem $RegPathControlPanelNotify){ Set-ItemProperty -Path $Item.PSPath -Name "IsPromoted" -Value "1" -Type DWord }
 }
 
-"Enabling Inline AutoComplete in File Explorer and Run Dialog..."
-if (-not (Test-Path -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete))
-			{
-				New-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Force
-			}
-			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force | Out-Null
-			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force | Out-Null
+# The rest do not apply to Windows 8 / Server 2012 platforms.
+if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*Windows 8*") )
+	{ exit 0 }
+	
+"Disabling AutoGameMode..."
+Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
+
+"Letting Windows improve Start and search results by tracking app launches (Remember commands typed in Run)..." # 0 - Disable and Disable "Show most used apps"
+Set-ItemProperty -LiteralPath 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'Start_TrackProgs' -Type 'DWord' -Value 1 -Force
 
 "Disabling Geolocation Service autostart - If disabled, Windows won't be able to determine your location for certain apps..."
 Set-Service -Name "lfsvc" -StartupType Manual
