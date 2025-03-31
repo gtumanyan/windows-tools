@@ -1,4 +1,3 @@
-
 <#PSScriptInfo
 
 .VERSION 2.0
@@ -217,8 +216,7 @@ Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinu
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue | Out-Null
 	
 # enable BBR2 Congestion Control Provider
-
-try {Set-NetTCPSetting -SettingName internet -CongestionProvider "bbr2"} catch {Write-Warning "BBR2 absent, skipping Congestion Control Provider change"}
+netsh int tcp set supplemental internet congestionprovider=BBR2   # Controls the congestion provider. Def: cubic newreno dctcp
 
 # HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\<<<GUIDs>>>
 # TcpAckFrequency <delete value>
