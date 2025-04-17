@@ -215,8 +215,7 @@ Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency disabled -ErrorAction S
 Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinue | Out-Null
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue | Out-Null
 	
-# enable BBR2 Congestion Control Provider
-netsh int tcp set supplemental internet congestionprovider=BBR2   # Controls the congestion provider. Def: cubic newreno dctcp
+netsh int tcp set supplemental internet congestionprovider=cubic   # Controls the congestion provider. Def: cubic newreno dctcp
 
 # HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\<<<GUIDs>>>
 # TcpAckFrequency <delete value>
