@@ -105,7 +105,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 # The settings come from a quite reliable source:
 # https://support.storagecraft.com/s/article/Tuning-Guide-for-StorageCraft-Software-on-Servers?language=en_US
 
-$WinVersionStr = Get-CimInstance -Class Win32_OperatingSystem | ForEach-Object -MemberName Caption
+# $WinVersionStr = Get-CimInstance -Class Win32_OperatingSystem | ForEach-Object -MemberName Caption
 
 function setupDWORD {
     param( [string]$regPath, [string]$nameForDWORD, [long]$valueForDWORD )
