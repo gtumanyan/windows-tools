@@ -165,6 +165,27 @@ function setupDWORD {
     ""
     }
 	
+# Disabling Spectre & Meltdown mitigations:
+setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "FeatureSettingsOverride" "3"
+setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "FeatureSettingsOverrideMask" "3"
+
+# Enable F8 boot menu with "Last Known Boot Configuration"
+# Back up the registry sections: ControlSet001, ControlSet002, ControlSet003, etc.
+setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager\LastKnownGood' 'Enabled' '1'
+# BackupCount — specifies how many ControlSet sections to back up (e.g., 2 = ControlSet001 and ControlSet002)
+setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager' 'BackupCount' '2'
+try
+{
+	Write-Host "bcdedit.exe /set ""{default}"" BootMenuPolicy Legacy`n" -ForegroundColor DarkGray
+  & bcdedit.exe /set "{default}" BootMenuPolicy Legacy > $null
+  if ( -not $? )
+  {
+  	Write-Host '   bcdedit: ' -ForegroundColor DarkGray -NoNewline
+    Write-Host 'Error' -ForegroundColor Yellow
+  }
+}
+catch {}
+						
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "SystemPages" "0"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "PagedPoolSize" "0x0b71b000"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "PoolUsageMaximum" "0x00000050"
