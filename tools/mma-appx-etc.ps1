@@ -150,18 +150,8 @@ function Remove-Package {
 	Remove-AppxPackage -Allusers
 }
 
-"XboxApp..."
-Remove-Package "Microsoft.XboxApp" | Out-Null
-"XboxGamingOverlay..."
-Remove-Package "Microsoft.XboxGamingOverlay" | Out-Null
-"XboxIdentityProvider..."
-Remove-Package "Microsoft.XboxIdentityProvider" | Out-Null
-"Xbox.TCUI..."
-Remove-Package "Microsoft.Xbox.TCUI" | Out-Null
-"XboxSpeechToTextOverlay..."
-Remove-Package "Microsoft.XboxSpeechToTextOverlay" | Out-Null
-"WindowsCommunicationsApps..."
-Remove-Package "Microsoft.WindowsCommunicationsApps" | Out-Null
+"WindowsFeedbackHub..."
+Remove-Package "Microsoft.WindowsFeedbackHub"
 "BingChat..."
 $BingChat = Get-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce -Name !BCILauncher 
 if ($BingChat)
@@ -171,19 +161,33 @@ if ($BingChat)
 	$BingChat | Remove-ItemProperty -Name !BCILauncher -Force 
 }
 "BingNews..."
-Remove-Package "Microsoft.BingNews" | Out-Null
+Remove-Package "Microsoft.BingNews"
 "BingWeather..."
-Remove-Package "Microsoft.BingWeather" | Out-Null
+Remove-Package "Microsoft.BingWeather"
+"Microsoft.YourPhone..."
+Remove-Package "Microsoft.YourPhone"
+"Yandex.Music..."
+Remove-Package "A025C540.Yandex.Music"
+"XboxApp..."
+Remove-Package "Microsoft.XboxApp"
+"XboxGamingOverlay..."
+Remove-Package "Microsoft.XboxGamingOverlay"
+"XboxIdentityProvider..."
+Remove-Package "Microsoft.XboxIdentityProvider"
+"Xbox.TCUI..."
+Remove-Package "Microsoft.Xbox.TCUI"
+"XboxSpeechToTextOverlay..."
+Remove-Package "Microsoft.XboxSpeechToTextOverlay"
+"WindowsCommunicationsApps..."
+Remove-Package "Microsoft.WindowsCommunicationsApps"
 "Advertising.Xaml..."
-Remove-Package "Microsoft.Advertising.Xaml" | Out-Null
+Remove-Package "Microsoft.Advertising.Xaml"
 "Skype..."
-Remove-Package "*Microsoft.Skype*" | Out-Null
+Remove-Package "*Microsoft.Skype*"
 "Disney..."
-Remove-Package "*Disney*" | Out-Null
+Remove-Package "*Disney*"
 "People..."
-Remove-Package "Microsoft.People" | Out-Null
-"WindowsFeedbackHub..."
-Remove-Package "Microsoft.WindowsFeedbackHub" | Out-Null
+Remove-Package "Microsoft.People"
 
 Write-Information -MessageData "" -InformationAction Continue
 "Removing Microsoft Edge..."
