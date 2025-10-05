@@ -244,6 +244,9 @@ taskkill /f /im compattelrunner.exe 2>&1 | Out-Null
 Stop-Service -Name "DiagTrack" 2>&1 | Out-Null
 Set-Service -Name DiagTrack -StartupType Disabled 2>&1 | Out-Null
 
+"Enable verbvose startup/shutdown mode..."
+New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System verbosestatus -Value 1
+
 "Disable Microsoft Consumer Experiences..."
 New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue | Out-Null
 
