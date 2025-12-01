@@ -27,29 +27,6 @@
 #> 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <#
 
 .DESCRIPTION 
@@ -186,63 +163,55 @@ try
 }
 catch {}
 						
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "SystemPages" "0"
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "PagedPoolSize" "0x0b71b000"
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "PoolUsageMaximum" "0x00000050"
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "SessionPoolSize" "0x00000030"
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "SessionViewSize" "0x00000044"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "Size" "3"
+setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" "65534"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "TcpTimedWaitDelay" "30"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "StrictTimeWaitSeqCheck" "1"
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" "65534"
 	
 setupDWORD "HKLM:\SOFTWARE\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_MAXCONNECTIONSPER1_0SERVER\explorer.exe" "MaxConnectionsPer1_0Server" "10"
-setupDWORD "HKLM:\SOFTWARE\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_MAXCONNECTIONSPER1_0SERVER\iexplore.exe" "MaxConnectionsPer1_0Server" "10"
 setupDWORD "HKLM:\SOFTWARE\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_MAXCONNECTIONSPERSERVER\explorer.exe" "MaxConnectionsPerServer" "10"
-setupDWORD "HKLM:\SOFTWARE\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_MAXCONNECTIONSPERSERVER\iexplore.exe" "MaxConnectionsPerServer" "10"	
+
+setupDWORD "HKLM:\System\CurrentControlSet\Services\Tcpip\QoS" "Do not use NLA" "1"
 	
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" LocalPriority "4"
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" HostsPriority "5"
+
+setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "SystemResponsiveness" "10"
+
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" DnsPriority "6"
+setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" HostsPriority "5"
+setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" LocalPriority "4"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" NetbtPriority "7"
 	
 setupDWORD "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched" "NonBestEffortLimit" "50"
 
-setupDWORD "HKLM:\System\CurrentControlSet\Services\Tcpip\QoS" "Do not use NLA" "1"
 	
 # Disabling Network Throttling increases DPC latency https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
 # setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" "0xffffffff"
 
-setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "SystemResponsiveness" "10"
-	
-	
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\ServicesTcpip\Parameters" "EnableTCPA" 1
+# Enable Network Direct Memory Access (NetDMA)
+netsh int tcp set global netdma=enabled
+setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableTCPA" 1
 	
 "Set-NetTCPSetting items etc..."
 
 # TCP Window Auto-Tuning does NOT cause bufferbloat, DONT disable to increase score
-Set-NetTCPSetting -SettingName "*" -AutoTuningLevelLocal normal -ErrorAction SilentlyContinue | Out-Null
-Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing disabled -ErrorAction SilentlyContinue | Out-Null
-Set-NetOffloadGlobalSetting -ReceiveSideScaling enabled -ErrorAction SilentlyContinue | Out-Null
-Disable-NetAdapterLso -Name * -ErrorAction SilentlyContinue | Out-Null
-Enable-NetAdapterChecksumOffload -Name * -ErrorAction SilentlyContinue | Out-Null
-	
-Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyContinue | Out-Null
+
 Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue | Out-Null
-try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skipping..."}
-Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 2 -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency disabled -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinue | Out-Null
-Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue | Out-Null
+Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing Disabled -ErrorAction SilentlyContinue
+Set-NetOffloadGlobalSetting -ReceiveSideScaling Enabled -ErrorAction SilentlyContinue
+
+Enable-NetAdapterChecksumOffload -Name * -ErrorAction SilentlyContinue
+# Review: Disabling LSO forces the CPU to segment packets instead of the NIC.
+# Verdict: Good for latency/gaming, bad for throughput/CPU usage on high-speed transfers (10Gbps+). Acceptable for a desktop
+Disable-NetAdapterLso -Name * -ErrorAction SilentlyContinue
 	
-# For StorageCraft ImageManager, if it exists
-# https://support.storagecraft.com/articles/en_US/Informational/Tuning-Guide-for-StorageCraft-Software-on-Servers
-If ( (Test-Path "C:\Program Files (x86)\StorageCraft\ImageManager") -Or (Test-Path "C:\Program Files\StorageCraft\ImageManager") )
-	{
-	Write-Output "StorageCraft ImageManager found."
-	Write-Output ""
-	setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\StorageCraft ImageManager\Parameters" "ReadUnbuffered" 0x1
-	}
+Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyContinue
+# TCP retransmission timeout, readonly
+Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue
+Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency disabled -ErrorAction SilentlyContinue
+Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinue
+try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skipping..."}
+# Connect retry attempts using SYN packets
+Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction SilentlyContinue
 	
 # The 3-Clause BSD License
 
