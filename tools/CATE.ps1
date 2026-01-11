@@ -345,8 +345,8 @@ function CATE-Delete {
 	If ( !(Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue) )
 		{ Return }
 
-	# If it's not, delete all contents with ROBOCOPY, 16 threads.
-	#
+	# If it's not, delete all contents with ROBOCOPY, 16 threads
+	# for higher sustained throughput on 5400 RPM drives
 	ROBOCOPY $blankFolder $deletePath /MIR /R:0 /W:0 /MT:16
 
 	# If there's anything left inside it, call this whole function recursively,
