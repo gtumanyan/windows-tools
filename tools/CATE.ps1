@@ -11,19 +11,19 @@
 
 .COPYRIGHT (c) 2025 Jonathan E. Brickman
 
-.TAGS 
+.TAGS
 
 .LICENSEURI https://opensource.org/licenses/BSD-3-Clause
 
 .PROJECTURI https://github.com/jebofponderworthy/windows-tools
 
-.ICONURI 
+.ICONURI
 
-.EXTERNALMODULEDEPENDENCIES 
+.EXTERNALMODULEDEPENDENCIES
 
-.REQUIREDSCRIPTS 
+.REQUIREDSCRIPTS
 
-.EXTERNALSCRIPTDEPENDENCIES 
+.EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
 CATE - Clean All Temp Etc
@@ -32,7 +32,7 @@ system profile temp folders, and system temp folders (they are not the same!);
 also clears logs, IE caches, Firefox caches, Chrome caches, Ask Partner Network data,
 Adobe Flash caches, Java deployment caches, and Microsoft CryptnetURL caches.
 
-#> 
+#>
 
 
 
@@ -132,7 +132,7 @@ Adobe Flash caches, Java deployment caches, and Microsoft CryptnetURL caches.
 
 <#
 
-.DESCRIPTION 
+.DESCRIPTION
 Clean All Temp Etc - cleans temporary files and folders from all standard user and system temp folders, clears logs, and more
 
 #>
@@ -278,7 +278,7 @@ function ShowCATEProgress {
 	catch {
 		Write-Host "Clean All Temp Etc: $reportStatus $currentOp"
 	}
-	
+
 	# Write-Progress is not compatible with some remote shell methods.
 }
 
@@ -296,13 +296,13 @@ $envUserProfile = $env:UserProfile
 $blankFolder = $envUserProfile + '\' + $randomFolderName
 New-Item $blankFolder -Force -ItemType Container | Out-Null
 If ( !(Test-Path $blankFolder -PathType Container -ErrorAction SilentlyContinue) )
-		{ 
+		{
 		Write-Host 'Error: Cannot create reference folder for delete primitive'
-		Exit 
+		Exit
 		}
-		
+
 # CATE-Delete is a functional recursive primitive,
-# useful for absolute deletes of items and trees, and 
+# useful for absolute deletes of items and trees, and
 # also callable for more selective uses
 
 # There is a lot of question about \\? path syntax.
@@ -319,7 +319,7 @@ function Test-ReparsePoint([string]$literalPath) {
 
 function CATE-Delete {
 	param( [string]$deletePath )
-	
+
 	# If the folder isn't there or we can't touch it, we're done
 	try {
 		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
@@ -328,28 +328,28 @@ function CATE-Delete {
 		{
 		Return
 		}
-	
+
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
 	# exit CATE-Delete silently
 	If (Test-ReparsePoint($deletePath))
 		{ Return }
-	
+
 	ShowCATEProgress $CATEStatus $deletePath
 
 	# First try to remove simply, which includes non-containers
 	# Do this using literal paths because it works more often
 	#
 	Remove-Item -LiteralPath $deletePath -Force -Recurse *> $null
-	
+
 	# If it's gone, we're done.
 	If ( !(Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue) )
 		{ Return }
-	
-	# If it's not, delete all contents with ROBOCOPY, 10 threads.
+
+	# If it's not, delete all contents with ROBOCOPY, 16 threads.
 	#
-	ROBOCOPY $blankFolder $deletePath /MIR /R:1 /W:1 /MT:10 *> $null
-	
-	# If there's anything left inside it, call this whole function recursively, 
+	ROBOCOPY $blankFolder $deletePath /MIR /R:0 /W:0 /MT:16
+
+	# If there's anything left inside it, call this whole function recursively,
 	# on all of the contents.
 	Try {
 		Get-ChildItem -Recurse -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue | ForEach-Object {
@@ -365,7 +365,7 @@ function CATE-Delete {
 
 function CATE-Delete-Folder-Contents {
 	param( [string]$deletePath )
-	
+
 	# If the folder isn't there or we can't touch it, we're done
 	try {
 		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
@@ -374,12 +374,12 @@ function CATE-Delete-Folder-Contents {
 		{
 		Return
 		}
-	
+
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
 	# exit CATE-Delete silently
 	If (Test-ReparsePoint($deletePath))
 		{ Return }
-		
+
 	ShowCATEProgress $CATEStatus $deletePath
 	"Counting contents of $deletepath ..."
 	# $file_count = [System.IO.Directory]::GetFiles("$deletepath", "*").Count
@@ -392,11 +392,11 @@ function CATE-Delete-Folder-Contents {
 		return
 		}
 	"Deleting $file_count items ..."
-		
+
 	# First try to wipe the inside of the folder simply.
 	# ROBOCOPY is current default method, for parallelism.
 	ROBOCOPY $blankFolder $deletePath /MIR /R:1 /W:1 /MT:10 /NFL /NDL /NJH /NJS /NC /NS /NP *> $null
-	
+
 	# Now try to delete everything left inside, using CATE-Delete.
 	Get-ChildItem -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue | ForEach-Object {
 		CATE-Delete ($deletePath + '\' + $_)
@@ -406,7 +406,7 @@ function CATE-Delete-Folder-Contents {
 
 function CATE-Delete-Files-Only {
 	param( [string]$deletePath, [string]$wildCard )
-	
+
 	# If the folder isn't there or we can't touch it, we're done
 	try {
 		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
@@ -415,12 +415,12 @@ function CATE-Delete-Files-Only {
 		{
 		Return
 		}
-	
+
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
 	# exit CATE-Delete silently
 	If (Test-ReparsePoint($deletePath))
 		{ Return }
-		
+
 	ShowCATEProgress $CATEStatus ($deletePath + '\' + $wildCard)
 	"Counting $wildCard in $deletepath ..."
 	$filepath = $deletePath
@@ -428,14 +428,14 @@ function CATE-Delete-Files-Only {
 	# $file_count = [System.IO.Directory]::GetFiles("$filepath", "$filetype").Count
 	$file_count = (Get-ChildItem -File "$filepath\$filetype" -ErrorAction SilentlyContinue | Measure-Object).Count
 	"Deleting $file_count files ..."
-	
+
 	ROBOCOPY $blankFolder $deletePath $wildCard /MIR /R:1 /W:1 /MT:10 /NFL /NDL /NJH /NJS /NC /NS /NP *> $null
 	""
 	}
-	
+
 function Replace-Numbered-Temp-Folders {
 	param( [string]$topPath )
-	
+
 	New-Item -Path ($topPath + '\1') -ItemType directory -Force -ErrorAction SilentlyContinue | Out-Null
 	New-Item -Path ($topPath + '\2') -ItemType directory -Force -ErrorAction SilentlyContinue | Out-Null
 	New-Item -Path ($topPath + '\3') -ItemType directory -Force -ErrorAction SilentlyContinue | Out-Null
@@ -446,7 +446,7 @@ function Replace-Numbered-Temp-Folders {
 	New-Item -Path ($topPath + '\8') -ItemType directory -Force -ErrorAction SilentlyContinue | Out-Null
 	New-Item -Path ($topPath + '\9') -ItemType directory -Force -ErrorAction SilentlyContinue | Out-Null
 	}
-		
+
 # Loop through all of the paths for all user profiles
 # as recorded in the registry, and delete temp files.
 
@@ -467,13 +467,13 @@ $ProfileList | ForEach-Object {
             CATE-Delete-Folder-Contents $ToClean
             }
         }
-		
+
 	# These loops handle Firefox and multiple FF profiles if they exist
 	$ffProfilePath = ($profileItem.ProfileImagePath + '\AppData\Local\Mozilla\Firefox\Profiles\')
 	If (Test-Path $ffProfilePath -PathType Container -ErrorAction SilentlyContinue) {
 		Get-ChildItem -LiteralPath $ffProfilePath -Force -ErrorAction SilentlyContinue | ForEach-Object {
 			$ffProfilePath = Get-ItemProperty $_.pspath
-		
+
 			ForEach ($subPath in $ffFoldersToClean) {
 				$ToClean = "$ffProfilePath\$subPath"
 				CATE-Delete-Folder-Contents $ToClean
@@ -484,7 +484,7 @@ $ProfileList | ForEach-Object {
 	If (Test-Path $ffProfilePath -PathType Container -ErrorAction SilentlyContinue) {
 		Get-ChildItem -LiteralPath $ffProfilePath -Force -ErrorAction SilentlyContinue | ForEach-Object {
 			$ffProfilePath = Get-ItemProperty $_.pspath
-		
+
 			ForEach ($subPath in $ffFoldersToClean) {
 				$ToClean = "$ffProfilePath\$subPath"
 				CATE-Delete-Folder-Contents $ToClean
@@ -494,7 +494,7 @@ $ProfileList | ForEach-Object {
 
     # A subpath to be eliminated altogether, also present in the $foldersToClean list above
     CATE-Delete ($profileItem.ProfileImagePath + '\AppData\Local\AskPartnerNetwork')
-	
+
 	# Recreate Windows TEMP folder subpaths, prevents issues in a number of oddball situations
 	Replace-Numbered-Temp-Folders ($profileItem.ProfileImagePath + '\AppData\Local\Temp') -Force -ErrorAction SilentlyContinue | Out-Null
 }
@@ -563,19 +563,19 @@ CATE-Delete-Folder-Contents ($envProgramData + '\SAAZOD\ApplicationLog\zSCCLog')
 
 function CATE-Clear-LCU {
 	param( [string]$deletePath )
-	
+
 	# If the folder isn't there or we can't touch it, we're done
 	try {
 		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
 		}
 	catch
 		{ Return }
-	
+
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
 	# exit CATE-Delete silently
 	If (Test-ReparsePoint($deletePath))
 		{ Return }
-		
+
 	ShowCATEProgress $CATEStatus $deletePath
 	"Counting folders under $deletepath and one more level down ..."
 	# $file_count = [System.IO.Directory]::GetFiles("$deletepath", "*").Count
@@ -583,7 +583,7 @@ function CATE-Clear-LCU {
 		$folders_level1 = (Get-ChildItem -Path $deletepath -Directory -ErrorAction SilentlyContinue)
 		$foldercount = $folders_level1.Count
 		}
-	catch 
+	catch
 		{
 		"Access denied: $deletepath"
 		return
@@ -601,11 +601,11 @@ function CATE-Clear-LCU {
 		return
 		}
 	"Deleting $foldercount folders total..."
-		
+
 	# First try to wipe the inside of the folder simply.
 	# ROBOCOPY is current default method, for parallelism.
 	ROBOCOPY $blankFolder $deletePath /MIR /R:1 /W:1 /MT:10 /NFL /NDL /NJH /NJS /NC /NS /NP *> $null
-	
+
 	# Now try to delete everything left inside, using CATE-Delete.
 	Get-ChildItem -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue | ForEach-Object {
 		CATE-Delete ($deletePath + '\' + $_)
@@ -625,14 +625,14 @@ Remove-Item "HKCU:\Software\Microsoft\Windows\CurrentVersion\Group Policy Object
 Remove-Item "HKCU:\\Software\Microsoft\Windows\CurrentVersion\Policies" -Force -Recurse -ErrorAction SilentlyContinue | Out-Null
 
 # Clear the users' Teams caches, as possible without disruption
-Get-ChildItem "C:\Users\*\AppData\Roaming\Microsoft\Teams\*" -directory | 
-	Where name -in ('application cache','blob storage','databases','GPUcache','IndexedDB','Local Storage','tmp') | 
+Get-ChildItem "C:\Users\*\AppData\Roaming\Microsoft\Teams\*" -directory |
+	Where name -in ('application cache','blob storage','databases','GPUcache','IndexedDB','Local Storage','tmp') |
 	ForEach{Remove-Item $_.FullName -Recurse -Force -WhatIf}
 
 
 function Background-Run-For-Five-Minutes-Max {
 	param( $MyScript )
-	
+
 	$JobGUID = [system.Guid]::NewGuid()
 
 	$elapsedEventHandler = {
@@ -670,7 +670,7 @@ $CompactWindowsUpdateDatabase = {
 		Start-Service bits *> $null
 	}
 }
-	
+
 Background-Run-For-Five-Minutes-Max $CompactWindowsUpdateDatabase
 
 ""

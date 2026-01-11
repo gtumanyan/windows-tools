@@ -11,19 +11,19 @@
 
 .COPYRIGHT (c) 2020 Jonathan E. Brickman
 
-.TAGS 
+.TAGS
 
 .LICENSEURI https://opensource.org/licenses/BSD-3-Clause
 
 .PROJECTURI https://github.com/jebofponderworthy/windows-tools
 
-.ICONURI 
+.ICONURI
 
-.EXTERNALMODULEDEPENDENCIES 
+.EXTERNALMODULEDEPENDENCIES
 
-.REQUIREDSCRIPTS 
+.REQUIREDSCRIPTS
 
-.EXTERNALSCRIPTDEPENDENCIES 
+.EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
 mma-appx-etc - performance gains of several kinds new to Windows 8/10/201*
@@ -31,7 +31,7 @@ Configures MMAgent (including Superfetch, Memory Compression, etc.) for performa
 removes several consumer-grade appx items, disables preload of Edge Browser,
 and disables Game Mode.
 
-#> 
+#>
 
 
 
@@ -45,12 +45,12 @@ and disables Game Mode.
 
 
 
-<# 
+<#
 
-.DESCRIPTION 
+.DESCRIPTION
 mma-appx-etc - performance gains of several kinds new to Windows 8/10/201*
 
-#> 
+#>
 
 Param()
 
@@ -65,7 +65,7 @@ Param()
 #
 # Speeds up Windows 8+/2012+, with special attention to 10 and up.  Specifically:
 #
-# 1. Set MMAgent for performance.  This includes Superfetch, 
+# 1. Set MMAgent for performance.  This includes Superfetch,
 # memory compression, and page combining.  Far better to do these things,
 # than to just turn Superfetch off.
 #
@@ -75,7 +75,7 @@ Param()
 # et cetera.
 #
 # 3. Removes Edge browser.
-# 
+#
 # 4. Turns off Game Mode.
 #
 # The latter two changes identified by the extraordinary Joe Busby.
@@ -130,35 +130,35 @@ If (-Not ($WinVersionStr -Like "*Windows Server 201*"))
 	{
 	If (-Not $MMAgentSetup.ApplicationPrelaunch)
 		{ Enable-MMAgent -ApplicationPreLaunch | Out-Null }
-	}	
+	}
 If (-Not $MMAgentSetup.MemoryCompression)
 	{ Enable-MMAgent -MemoryCompression | Out-Null }
 If (-Not $MMAgentSetup.OperationAPI)
 	{ Enable-MMAgent -OperationAPI -ErrorAction SilentlyContinue }
 If (-Not $MMAgentSetup.PageCombining)
 	{ Enable-MMAgent -PageCombining | Out-Null }
-	
+
 "Removing appx's..."
 
 # Will add deprovisioning:  Remove-AppxProvisionedPackage -Online -PackageName MyAppxPkg
 
 function Remove-Package {
 	param( [string] $PackageString )
-	
-	Get-AppxPackage -allusers -PackageTypeFilter Main, Bundle, Resource | 
-	Where-Object {$_.Name -EQ $PackageString} | 
+
+	Get-AppxPackage -allusers -PackageTypeFilter Main, Bundle, Resource |
+	Where-Object {$_.Name -EQ $PackageString} |
 	Remove-AppxPackage -Allusers
 }
 
 "WindowsFeedbackHub..."
 Remove-Package "Microsoft.WindowsFeedbackHub"
 "BingChat..."
-$BingChat = Get-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce -Name !BCILauncher 
+$BingChat = Get-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce -Name !BCILauncher
 if ($BingChat)
 {
 	Get-Process -Name BingChatInstaller | Stop-Process -Force
 	Get-Process -Name BCILauncher | Stop-Process -Force
-	$BingChat | Remove-ItemProperty -Name !BCILauncher -Force 
+	$BingChat | Remove-ItemProperty -Name !BCILauncher -Force
 }
 "BingNews..."
 Remove-Package "Microsoft.BingNews"
@@ -202,20 +202,20 @@ if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinu
 }
 
 "Enabling Inline AutoComplete in File Explorer and Run Dialog..."
-if (-not (Test-Path -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete))
+if (-not (Test-Path -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete))
 			{
-				New-Item -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Force
+				New-Item -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Force
 			}
-			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force | Out-Null
-			New-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force | Out-Null
+			New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force | Out-Null
+			New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force | Out-Null
 
 "Removing IDMan autorun entry..." # Didn't find any decent portable (
-Remove-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force -ErrorAction Ignore
+Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force -ErrorAction Ignore
 
 "Showing All Tray Icons..."
 if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
 	# Pre-Windows-11
-	Set-ItemProperty -LiteralPath 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'EnableAutoTray' -Type 'DWord' -Value 0 -Force
+	Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer -Name "EnableAutoTray" -Type DWord -Value 0 -Force
 } else {
 	# Windows 11
 	$RegPathControlPanelNotify = ('HKCU:\Control Panel\NotifyIconSettings')
@@ -225,12 +225,12 @@ if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
 # The rest do not apply to Windows 8 / Server 2012 platforms.
 if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*Windows 8*") )
 	{ exit 0 }
-	
+
 "Disabling AutoGameMode..."
 Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
 
 "Letting Windows improve Start and search results by tracking app launches (Remember commands typed in Run)..." # 0 - Disable and Disable "Show most used apps"
-Set-ItemProperty -LiteralPath 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'Start_TrackProgs' -Type 'DWord' -Value 1 -Force
+Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'Start_TrackProgs' -Type DWord -Value 1 -Force
 
 "Explorer. Adding 'Devices and Printers' to 'This PC'..."
 New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}"
