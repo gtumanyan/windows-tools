@@ -34,102 +34,6 @@ Adobe Flash caches, Java deployment caches, and Microsoft CryptnetURL caches.
 
 #>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <#
 
 .DESCRIPTION
@@ -318,57 +222,39 @@ function Test-ReparsePoint([string]$literalPath) {
 	}
 
 function CATE-Delete {
-	param( [string]$deletePath )
+    param([string]$deletePath)
 
 	# If the folder isn't there or we can't touch it, we're done
-	try {
-		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
-		}
-	catch
-		{
-		Return
-		}
+	try {$null = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue}
+	catch {Return}
 
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
 	# exit CATE-Delete silently
-	If (Test-ReparsePoint($deletePath))
-		{ Return }
+    if (Test-ReparsePoint $deletePath) {return}
 
-	ShowCATEProgress $CATEStatus $deletePath
+    ShowCATEProgress $CATEStatus $deletePath
 
-	# First try to remove simply, which includes non-containers
+    # First try to remove simply, which includes non-containers
 	# Do this using literal paths because it works more often
-	#
-	Remove-Item -LiteralPath $deletePath -Force -Recurse *> $null
+    Remove-Item -LiteralPath $deletePath -Recurse -Force -ErrorAction SilentlyContinue
 
 	# If it's gone, we're done.
-	If ( !(Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue) )
-		{ Return }
+    if ($null = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue) {
+        # Use ROBOCOPY for large directory trees
+        ROBOCOPY $blankFolder $deletePath /MIR /R:0 /W:0 /MT:16 /NFL /NDL /NJH /NJS /NC /NS /NP *
 
-	# If it's not, delete all contents with ROBOCOPY, 16 threads
-	# for higher sustained throughput on 5400 RPM drives
-	ROBOCOPY $blankFolder $deletePath /MIR /R:0 /W:0 /MT:16
-
-	# If there's anything left inside it, call this whole function recursively,
-	# on all of the contents.
-	Try {
-		Get-ChildItem -Recurse -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue | ForEach-Object {
-			CATE-Delete ($deletePath + '\' + $_)
-			}
-		}
-	Catch
-		{
-		"Cannot recurse path: $deletePath"
-		Return
-		}
-	}
+        # Fallback recursive delete for stubborn items
+        Get-ChildItem -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue |
+            ForEach-Object { CATE-Delete "$deletePath\$_" }
+    }
+}
 
 function CATE-Delete-Folder-Contents {
 	param( [string]$deletePath )
 
 	# If the folder isn't there or we can't touch it, we're done
 	try {
-		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
+		$null = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
 		}
 	catch
 		{
@@ -409,7 +295,7 @@ function CATE-Delete-Files-Only {
 
 	# If the folder isn't there or we can't touch it, we're done
 	try {
-		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
+		$null = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
 		}
 	catch
 		{
@@ -566,7 +452,7 @@ function CATE-Clear-LCU {
 
 	# If the folder isn't there or we can't touch it, we're done
 	try {
-		$retval = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
+		$null = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
 		}
 	catch
 		{ Return }
@@ -742,20 +628,3 @@ exit
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
