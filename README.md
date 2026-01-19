@@ -4,9 +4,9 @@ This is a toolset to improve the performance of Windows desktop and server opera
 
 ## To launch the script download and run
 
-[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which, if run as administrator, will download and run [Optimize.ps1](tools/Optimize.ps1), when in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [RunDevNodeClean](#rundevnodeclean), then [wt_removeGhosts](#wt_removeghosts-remove-ghost-devices-from-windows), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss--optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
+[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which, if run as administrator, will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [RunDevNodeClean](#rundevnodeclean), then [wt_removeGhosts](#wt_removeghosts-remove-ghost-devices-from-windows), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
 
-## or just execute 
+## or just execute
 ```powershell
 irm windr.msk.ru | iex
 ```
@@ -34,7 +34,7 @@ Over time, Windows accumulates 'ghost devices', devices that can show up in Devi
 
 ## TweakDrives: Tweak NTFS for Performance and Reliability
 
-In [TweakDrives](tools/TweakDrives.ps1), SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.  
+In [TweakDrives](tools/TweakDrives.ps1), SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.
 
 ## TweakSMB: Tweak SMB file sharing for performance and reliability
 
@@ -50,9 +50,9 @@ more so with more RAM.
 Documentation on these settings has ranged from sparse to none over
 many years.  The early Microsoft documents used in the  calculations appear
 completely gone, there are some new ones.  The settings produced by OWTAS
-have undergone continuous testing since 2006, on a wide variety of 
+have undergone continuous testing since 2006, on a wide variety of
 Wintelamd platforms, and appear to work well on all.
-  
+
 OWTAS is available as [VBS](https://github.com/gtumanyan/windows-tools/raw/master/old-vbs/OWTAS.VBS) and as [PowerShell](https://github.com/gtumanyan/windows-tools/raw/master/tools/OWTAS.ps1).  Future development will be in PowerShell.
 
 The tool is designed for Windows 10/2019 down through XP/2003. It is self-elevating if run non-administratively.
@@ -61,7 +61,7 @@ The tool is designed for Windows 10/2019 down through XP/2003. It is self-elevat
 
 This tool is no longer run automatically by any of the OPTIMIZE items.  Newer Microsoft operating systems handle share caching much better.  But it is still available in the Tools area.
 
-By default in Windows since XP/2003, if a folder is shared to the network via SMB, so-called "caching" is turned on.  This actually means that the Offline Files service on *other* machines accessing the share, are allowed to retrieve and store copies of files and folders on the machine acting as server.  Turning this off for all shares gives a speed bump for the server machine, and also improves reliability overall, dependence on Offline Files can lead to all sorts of issues including data loss when the server is not available or suddenly becomes available et cetera.  [TOSC](https://github.com/gtumanyan/windows-tools/raw/master/tools/TOSC.ps1) does this very well, for all file shares extant on the machine on which it is run.
+By default, in Windows since XP/2003, if a folder is shared to the network via SMB, so-called "caching" is turned on.  This actually means that the Offline Files service on *other* machines accessing the share, are allowed to retrieve and store copies of files and folders on the machine acting as server.  Turning this off for all shares gives a speed bump for the server machine, and also improves reliability overall, dependence on Offline Files can lead to all sorts of issues including data loss when the server is not available or suddenly becomes available et cetera.  [TOSC](https://github.com/gtumanyan/windows-tools/raw/master/tools/TOSC.ps1) does this very well, for all file shares extant on the machine on which it is run.
 
 ## OVSS:  Optimize VSS
 
