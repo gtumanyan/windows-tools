@@ -16,7 +16,7 @@
 
 .ICONURI
 
-.EXTERNALMODULEDEPENDENCIES 
+.EXTERNALMODULEDEPENDENCIES
 
 .REQUIREDSCRIPTS
 
@@ -24,12 +24,12 @@
 
 .PRIVATEDATA
 
-#> 
+#>
 
 
 <#
 
-.DESCRIPTION 
+.DESCRIPTION
 Tweaks memory and TCP parameters, for performance.
 
 #>
@@ -109,6 +109,10 @@ function setupDWORD {
         $oldValue = $oldValueProperty.$nameforDWORD
         }
 	Catch {}
+    # Skip if no changes to make
+    If ($oldValue -eq $valueforDWORD) {
+		Return
+		}
 
     #############
     # Report the changes to make
@@ -123,13 +127,8 @@ function setupDWORD {
     Write-Output ("New value is " + $valueforDWORD)
 
     ############
-    # Report no changes to make, set new registry entry, or error out
-	If ($oldValue -eq $valueforDWORD) {
-		Write-Output "No change to make."
-		""
-		Return
-		}
-    Try {
+    # Set new registry entry, or error out
+	Try {
         New-ItemProperty -Path $regPath -Name $nameForDWORD -Value $valueForDWORD -PropertyType DWORD -Force -ErrorAction SilentlyContinue > $null
         }
     Catch {
@@ -141,7 +140,7 @@ function setupDWORD {
     "Succeeded!"
     ""
     }
-	
+
 # Disabling Spectre & Meltdown mitigations:
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "FeatureSettingsOverride" "3"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" "FeatureSettingsOverrideMask" "3"
@@ -153,26 +152,36 @@ setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration
 setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager' 'BackupCount' '2'
 try
 {
-	Write-Host "bcdedit.exe /set ""{default}"" BootMenuPolicy Legacy`n" -ForegroundColor DarkGray
-  & bcdedit.exe /set "{default}" BootMenuPolicy Legacy > $null
+# Disable Windows virtualization-based security isolation to improve system performance and compatibility
+
+# isolatedcontext - Controls Hyper-V based security isolation (Core Isolation, Memory Integrity, VBS)
+#   - Yes (default): Enables hardware-enforced virtualization security boundaries, protecting against
+#     certain firmware attacks and isolating privileged operations. Required for features like
+#     Windows Defender Application Guard, Credential Guard, and HVCI (Hypervisor-Protected Code Integrity)
+#   - No: Disables these security layers, reducing CPU virtualization overhead (~5-10% performance gain
+#     in CPU-bound games like Microsoft Flight Simulator, Assetto Corsa) and resolving compatibility
+#     issues with non-Microsoft virtualization platforms (VMware Workstation, VirtualBox)
+    Write-Host " Disabling Windows virtualization-based security isolation`n" -fore Green
+    & bcdedit.exe /set isolatedcontext No > $null
+    # Set Legacy Boot menu to make use of LastKnownGood configuration
+    Write-Host " Setting Legacy Boot menu to make use of LastKnownGood configuration`n" -fore Green
+    & bcdedit.exe /set "{default}" BootMenuPolicy Legacy > $null
+}
+catch
+{
   if ( -not $? )
   {
   	Write-Host '   bcdedit: ' -ForegroundColor DarkGray -NoNewline
     Write-Host 'Error' -ForegroundColor Yellow
   }
 }
-catch {}
-						
+
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "Size" "3"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" "65534"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "TcpTimedWaitDelay" "30"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "StrictTimeWaitSeqCheck" "1"
-	
-setupDWORD "HKLM:\SOFTWARE\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_MAXCONNECTIONSPER1_0SERVER\explorer.exe" "MaxConnectionsPer1_0Server" "10"
-setupDWORD "HKLM:\SOFTWARE\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_MAXCONNECTIONSPERSERVER\explorer.exe" "MaxConnectionsPerServer" "10"
 
 setupDWORD "HKLM:\System\CurrentControlSet\Services\Tcpip\QoS" "Do not use NLA" "1"
-	
 
 setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "SystemResponsiveness" "10"
 
@@ -180,20 +189,18 @@ setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" DnsPr
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" HostsPriority "5"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" LocalPriority "4"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" NetbtPriority "7"
-	
+
 setupDWORD "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched" "NonBestEffortLimit" "50"
 
-	
+
 # Disabling Network Throttling increases DPC latency https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
 # setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" "0xffffffff"
 
 # Enable Network Direct Memory Access (NetDMA)
 netsh int tcp set global netdma=enabled
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableTCPA" 1
-	
-"Set-NetTCPSetting items etc..."
 
-# TCP Window Auto-Tuning does NOT cause bufferbloat, DONT disable to increase score
+"Set-NetTCPSetting items etc..."
 
 Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue | Out-Null
 Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing Disabled -ErrorAction SilentlyContinue
@@ -203,7 +210,7 @@ Enable-NetAdapterChecksumOffload -Name * -ErrorAction SilentlyContinue
 # Review: Disabling LSO forces the CPU to segment packets instead of the NIC.
 # Verdict: Good for latency/gaming, bad for throughput/CPU usage on high-speed transfers (10Gbps+). Acceptable for a desktop
 Disable-NetAdapterLso -Name * -ErrorAction SilentlyContinue
-	
+
 Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyContinue
 # TCP retransmission timeout, readonly
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue
@@ -212,7 +219,7 @@ Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinu
 try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skipping..."}
 # Connect retry attempts using SYN packets
 Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction SilentlyContinue
-	
+
 # The 3-Clause BSD License
 
 # SPDX short identifier: BSD-3-Clause
