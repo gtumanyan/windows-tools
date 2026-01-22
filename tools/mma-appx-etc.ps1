@@ -66,7 +66,7 @@ Param()
 # https://opensource.org/licenses/BSD-3-Clause
 # and is reprised at the end of this file
 #
-"**************************************************************"
+""
 "   Disable Fast Startup   "
 "**************************************************************"
 powercfg /hibernate off
@@ -156,7 +156,6 @@ Remove-Package "*Disney*"
 "People..."
 Remove-Package "Microsoft.People"
 
-Write-Information -MessageData "" -InformationAction Continue
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
 
@@ -203,7 +202,7 @@ Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\
 "Explorer. Adding 'Devices and Printers' to 'This PC'..."
 New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}"
 
-"Disabling Geolocation Service autostart - If disabled, Windows won't be able to determine your location for certain apps..."
+"Disabling Geolocation Service autostart - Windows won't be able to determine your location for certain apps..."
 Set-Service -Name "lfsvc" -StartupType Manual
 
 "Disable Windows Compatibility Telemetry..."
@@ -221,3 +220,4 @@ If ((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Dev
 {
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force
 }
+""
