@@ -1,9 +1,9 @@
 
 <#PSScriptInfo
 
-.VERSION 1.5
+.VERSION 1.5+
 
-.AUTHOR Jonathan E. Brickman
+.AUTHOR Jonathan E. Brickman & Gregory G. Tumanyan
 
 .COMPANYNAME Ponderworthy Music
 
@@ -296,7 +296,7 @@ function Remove-AllItemProperties
     Remove-ItemProperty -Name * @PSBoundParameters
 }
 
-Remove-AllItemProperties "HKCU:\SOFTWARE\microsoft\windows nt\currentversion\devices"
+Remove-AllItemProperties "HKCU:\SOFTWARE\microsoft\windows nt\currentversion\devices" -ErrorAction Ignore
 
 ""
 
