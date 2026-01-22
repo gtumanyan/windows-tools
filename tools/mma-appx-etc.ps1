@@ -67,8 +67,7 @@ Param()
 # and is reprised at the end of this file
 #
 ""
-"   Disable Fast Startup   "
-"**************************************************************"
+"Disabling Fast Startup..."
 powercfg /hibernate off
 ""
 "*********************************************************************"
@@ -221,3 +220,4 @@ If ((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Dev
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force
 }
 ""
+
