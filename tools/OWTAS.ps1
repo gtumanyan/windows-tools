@@ -1,11 +1,11 @@
 
 <#PSScriptInfo
 
-.VERSION 3.8
+.VERSION 3.8+
 
 .GUID 14025447-cf92-41ee-b735-3d99c9e2c4d5
 
-.AUTHOR Jonathan E. Brickman
+.AUTHOR Jonathan E. Brickman & Gregory G. Tumanyan
 
 .COMPANYNAME Ponderworthy Music
 
@@ -41,30 +41,6 @@ to work well on all.
 .PRIVATEDATA
 
 #> 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <#
 
@@ -181,7 +157,11 @@ function setupDWORD {
     Catch {
         $oldValue = ""
         }
-
+		
+	#############
+	# Skip if no changes to make
+	If ($oldValue -eq $valueforDWORD) { Return }
+		
     #############
     # Report the changes to make
     Write-Output ("DWORD to write: " + $nameForDWORD)
@@ -195,12 +175,8 @@ function setupDWORD {
     Write-Output ("New value is " + $valueforDWORD)
 
     ############
-    # Report no changes to make, set new registry entry, or error out
-	If ($oldValue -eq $valueforDWORD) {
-		Write-Output "No change to make."
-		""
-		Return
-		}
+    # Set new registry entry, or error out
+
     Try {
         New-ItemProperty -Path $regPath -Name $nameForDWORD -Value $valueForDWORD -PropertyType DWORD -Force -ErrorAction SilentlyContinue > $null
         }
@@ -269,5 +245,6 @@ setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\RpcXdr\Parameters" "MaxCmds"
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 
 
