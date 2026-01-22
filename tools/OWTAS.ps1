@@ -76,11 +76,9 @@ Param()
 #
 
 ""
-""
 "**************************************************"
 "   Optimize Worker Threads and Service Requests   "
 "**************************************************"
-""
 ""
 
 # Self-elevate if not already elevated.
@@ -245,6 +243,7 @@ setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\RpcXdr\Parameters" "MaxCmds"
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 
 
 
