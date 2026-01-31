@@ -182,13 +182,8 @@ function setupDWORD {
     Write-Output ("New value is " + $valueforDWORD)
 
     ############
-    # Report no changes to make, set new registry entry, or error out
-	If ($oldValue -eq $valueforDWORD) {
-		Write-Output "No change to make."
-		""
-		Return
-		}
-    Try {
+    # Set new registry entry, or error out
+	Try {
         New-ItemProperty -Path $regPath -Name $nameForDWORD -Value $valueForDWORD -PropertyType DWORD -Force -ErrorAction SilentlyContinue > $null
         }
     Catch {
@@ -220,5 +215,6 @@ Restart-Service -Force -Name "VSS"
 
 "Complete!"
 ""
+
 
 
