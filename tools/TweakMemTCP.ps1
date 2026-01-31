@@ -82,8 +82,40 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 # The settings come from a quite reliable source:
 # https://support.storagecraft.com/s/article/Tuning-Guide-for-StorageCraft-Software-on-Servers?language=en_US
 
-# $WinVersionStr = Get-CimInstance -Class Win32_OperatingSystem | ForEach-Object -MemberName Caption
+function EnableHyperVEnhancedMode
+{
+	[System.ComponentModel.Description(
+		'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs')]
+	[CmdletBinding(HelpURI='cmd')] param()
 
+	# Fixes the problem where you can't log on when connecting to a VM in enhanced mode due
+	# to a conflict in how Windows Hello works, so must disable it to allow enhanced mode.
+	# Also (doesn't :-/ ) fixes the problem where BioIso.exe runs multiple instances, 
+	# eating up CPU, even though corporate has disabled Windows Hello via policy
+
+	# are we running in a Hyper-V VM?
+	if ((gwmi Win32_BaseBoard).Manufacturer -eq 'Microsoft Corporation')
+	{
+		Write-Verbose 'disabling Windows Hello for this VM'
+		# 0=disabled, 2=enabled
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
+		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+	}
+	else
+	{
+		Write-Verbose 'disabling Windows Hello to improve RDP to this Win11 machine'
+		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
+		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
+		# 0=disabled, 2=enabled
+		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+
+		## this disables PIN!
+		# 0=disabled, 1=enabled
+		#$0 = 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowSignInOptions'
+		#Set-ItemProperty $0 -Name 'value' -Type DWord -Value 0	
+	}
+}
+	
 function setupDWORD {
     param( [string]$regPath, [string]$nameForDWORD, [long]$valueForDWORD )
 
@@ -150,8 +182,7 @@ setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Manage
 setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager\LastKnownGood' 'Enabled' '1'
 # BackupCount — specifies how many ControlSet sections to back up (e.g., 2 = ControlSet001 and ControlSet002)
 setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager' 'BackupCount' '2'
-try
-{
+
 # Disable Windows virtualization-based security isolation to improve system performance and compatibility
 
 # isolatedcontext - Controls Hyper-V based security isolation (Core Isolation, Memory Integrity, VBS)
@@ -160,7 +191,8 @@ try
 #     Windows Defender Application Guard, Credential Guard, and HVCI (Hypervisor-Protected Code Integrity)
 #   - No: Disables these security layers, reducing CPU virtualization overhead (~5-10% performance gain
 #     in CPU-bound games like Microsoft Flight Simulator, Assetto Corsa) and resolving compatibility
-#     issues with non-Microsoft virtualization platforms (VMware Workstation, VirtualBox)
+#     issues with non-Microsoft virtualization platforms (VMware Workstation, VirtualBox)try
+{
     Write-Host " Disabling Windows virtualization-based security isolation`n" -fore Green
     & bcdedit.exe /set isolatedcontext No > $null
     # Set Legacy Boot menu to make use of LastKnownGood configuration
@@ -175,6 +207,8 @@ catch
     Write-Host 'Error' -ForegroundColor Yellow
   }
 }
+
+EnableHyperVEnhancedMode
 
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "Size" "3"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" "65534"
@@ -262,6 +296,7 @@ Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction Silentl
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 
 
 
