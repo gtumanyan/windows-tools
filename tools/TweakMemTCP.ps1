@@ -192,13 +192,13 @@ setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration
 #   - No: Disables these security layers, reducing CPU virtualization overhead (~5-10% performance gain
 #     in CPU-bound games like Microsoft Flight Simulator, Assetto Corsa) and resolving compatibility
 #     issues with non-Microsoft virtualization platforms (VMware Workstation, VirtualBox)try
-{
+try {
     Write-Host " Disabling Windows virtualization-based security isolation`n" -fore Green
     & bcdedit.exe /set isolatedcontext No > $null
     # Set Legacy Boot menu to make use of LastKnownGood configuration
     Write-Host " Setting Legacy Boot menu to make use of LastKnownGood configuration`n" -fore Green
     & bcdedit.exe /set "{default}" BootMenuPolicy Legacy > $null
-}
+	}
 catch
 {
   if ( -not $? )
@@ -296,6 +296,7 @@ Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction Silentl
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 
 
 
