@@ -238,8 +238,6 @@ netsh int tcp set supplemental internet congestionprovider=bbr2
 "Uppping the Reassembly Out Of Order Limit for AmneziaWG with Jc=120 and MTU=1280..."
 netsh int ip set global reassemblyoutoforderlimit=1300
 
-setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableTCPA" 1
-
 "Set-NetTCPSetting items etc..."
 
 Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue | Out-Null
