@@ -90,7 +90,7 @@ function EnableHyperVEnhancedMode
 
 	# Fixes the problem where you can't log on when connecting to a VM in enhanced mode due
 	# to a conflict in how Windows Hello works, so must disable it to allow enhanced mode.
-	# Also (doesn't :-/ ) fixes the problem where BioIso.exe runs multiple instances, 
+	# Also (doesn't :-/ ) fixes the problem where BioIso.exe runs multiple instances,
 	# eating up CPU, even though corporate has disabled Windows Hello via policy
 
 	# are we running in a Hyper-V VM?
@@ -99,7 +99,7 @@ function EnableHyperVEnhancedMode
 		Write-Verbose 'disabling Windows Hello for this VM'
 		# 0=disabled, 2=enabled
 		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
-		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0
 	}
 	else
 	{
@@ -107,15 +107,15 @@ function EnableHyperVEnhancedMode
 		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
 		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
 		# 0=disabled, 2=enabled
-		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0	
+		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0
 
 		## this disables PIN!
 		# 0=disabled, 1=enabled
 		#$0 = 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowSignInOptions'
-		#Set-ItemProperty $0 -Name 'value' -Type DWord -Value 0	
+		#Set-ItemProperty $0 -Name 'value' -Type DWord -Value 0
 	}
 }
-	
+
 function setupDWORD {
     param( [string]$regPath, [string]$nameForDWORD, [long]$valueForDWORD )
 
@@ -230,13 +230,14 @@ setupDWORD "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched" "NonBestEffortLimi
 # Disabling Network Throttling increases DPC latency https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
 # setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" "0xffffffff"
 
-# Loopback Large Mtu disable to fix BBR2 hangs in apps like Steam or Gradle
+"Disabling Loopback Large Mtu to fix BBR2 hangs in apps like Steam or Gradle..."
 netsh int ip set global loopbacklargemtu=disable
-# BBR2 Congestion provider
+"Setting BBR2 Congestion provider..."
 netsh int tcp set supplemental internet congestionprovider=bbr2
 
-# Enable Network Direct Memory Access (NetDMA)
-netsh int tcp set global netdma=enabled
+"Uppping the Reassembly Out Of Order Limit for AmneziaWG with Jc=120 and MTU=1280..."
+netsh int ip set global reassemblyoutoforderlimit=1300
+
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableTCPA" 1
 
 "Set-NetTCPSetting items etc..."
