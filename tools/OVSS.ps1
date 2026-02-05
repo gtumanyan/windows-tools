@@ -1,11 +1,11 @@
 
 <#PSScriptInfo
 
-.VERSION 4.3
+.VERSION 4.3+
 
 .GUID ced41cc3-0763-4229-be97-4aac877c39e2
 
-.AUTHOR Jonathan E. Brickman
+.AUTHOR Jonathan E. Brickman & Gregory G. Tumanyan
 
 .COMPANYNAME Ponderworthy Music
 
@@ -35,56 +35,6 @@ for System Volume Information.
 .PRIVATEDATA
 
 #> 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <#
 
@@ -215,7 +165,11 @@ function setupDWORD {
         $oldValue = ""
         }
 
-    #############
+	#############
+	# Skip if no changes to make
+	If ($oldValue -eq $valueforDWORD) { Return }
+	
+	#############
     # Report the changes to make
     Write-Output ("DWORD to write: " + $nameForDWORD)
     Write-Output ("at registry path " + $regPath)
@@ -228,13 +182,8 @@ function setupDWORD {
     Write-Output ("New value is " + $valueforDWORD)
 
     ############
-    # Report no changes to make, set new registry entry, or error out
-	If ($oldValue -eq $valueforDWORD) {
-		Write-Output "No change to make."
-		""
-		Return
-		}
-    Try {
+    # Set new registry entry, or error out
+	Try {
         New-ItemProperty -Path $regPath -Name $nameForDWORD -Value $valueForDWORD -PropertyType DWORD -Force -ErrorAction SilentlyContinue > $null
         }
     Catch {
@@ -266,4 +215,6 @@ Restart-Service -Force -Name "VSS"
 
 "Complete!"
 ""
+
+
 

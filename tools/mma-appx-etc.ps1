@@ -1,4 +1,3 @@
-
 <#PSScriptInfo
 
 .VERSION 2.81+
@@ -30,36 +29,17 @@ mma-appx-etc - performance gains of several kinds new to Windows 8/10/201*
 Configures MMAgent (including Superfetch, Memory Compression, etc.) for performance,
 removes several consumer-grade appx items, disables preload of Edge Browser,
 and disables Game Mode.
-
 #>
-
-
-
-
-
-
-
-
-
-
-
-
 
 <#
-
 .DESCRIPTION
 mma-appx-etc - performance gains of several kinds new to Windows 8/10/201*
-
 #>
-
 Param()
-
-
 #####################################################################
 # MMA, appx, and other 8+/2012+/10/201*/11/202* performance items   #
 # v2.81                                                             #
 #####################################################################
-
 #
 # by Jonathan E. Brickman
 #
@@ -86,23 +66,13 @@ Param()
 # https://opensource.org/licenses/BSD-3-Clause
 # and is reprised at the end of this file
 #
-
 ""
-""
-"**************************************************************"
-"   Disable Fast Startup   "
-"**************************************************************"
-""
-""
-
+"Disabling Fast Startup..."
 powercfg /hibernate off
-
-""
 ""
 "*********************************************************************"
 "   MMA, appx, and other 8+/2012+/10/201*/11/202* performance items   "
 "*********************************************************************"
-""
 ""
 
 $WinVersionStr = Get-CimInstance -Class Win32_OperatingSystem | ForEach-Object -MemberName Caption
@@ -118,25 +88,21 @@ if ($WinVersionStr -Like "*Windows 7*")
 $ErrorActionPreference= 'silentlycontinue'
 
 "Configuring and enabling aspects of MMAgent..."
-
-Set-Service sysmain -StartupType Automatic | Out-Null
-Start-Service sysmain | Out-Null
-
-Set-MMAgent -MaxOperationAPIFiles 8192 | Out-Null
+Set-MMAgent -MaxOperationAPIFiles 1024
 
 $MMAgentSetup = Get-MMAgent
 
 If (-Not ($WinVersionStr -Like "*Windows Server 201*"))
 	{
 	If (-Not $MMAgentSetup.ApplicationPrelaunch)
-		{ Enable-MMAgent -ApplicationPreLaunch | Out-Null }
+		{ Enable-MMAgent -ApplicationPreLaunch }
 	}
 If (-Not $MMAgentSetup.MemoryCompression)
-	{ Enable-MMAgent -MemoryCompression | Out-Null }
+	{ Enable-MMAgent -MemoryCompression }
 If (-Not $MMAgentSetup.OperationAPI)
-	{ Enable-MMAgent -OperationAPI -ErrorAction SilentlyContinue }
+	{ Enable-MMAgent -OperationAPI  }
 If (-Not $MMAgentSetup.PageCombining)
-	{ Enable-MMAgent -PageCombining | Out-Null }
+	{ Enable-MMAgent -PageCombining }
 
 "Removing appx's..."
 
@@ -189,12 +155,12 @@ Remove-Package "*Disney*"
 "People..."
 Remove-Package "Microsoft.People"
 
-Write-Information -MessageData "" -InformationAction Continue
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
 
 # AMD External Events Utility (probably want this one)
-if (Get-Service -Name "AMD External Events Utility" -ErrorAction SilentlyContinue)
+"Stopping AMD External Events Utility..."
+if (Get-Service -Name "AMD External Events Utility")
 {
 	# Probably want this service running
 	Stop-Service -Name "AMD External Events Utility"
@@ -206,11 +172,11 @@ if (-not (Test-Path -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explor
 			{
 				New-Item -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Force
 			}
-			New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force | Out-Null
-			New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force | Out-Null
+$null = New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force
+$null = New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force
 
 "Removing IDMan autorun entry..." # Didn't find any decent portable (
-Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force -ErrorAction Ignore
+Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force
 
 "Showing All Tray Icons..."
 if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
@@ -227,7 +193,7 @@ if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*
 	{ exit 0 }
 
 "Disabling AutoGameMode..."
-Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force -ErrorAction SilentlyContinue | Out-Null
+$null = Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services -Name "xbgm" -Value 4 -Force
 
 "Letting Windows improve Start and search results by tracking app launches (Remember commands typed in Run)..." # 0 - Disable and Disable "Show most used apps"
 Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'Start_TrackProgs' -Type DWord -Value 1 -Force
@@ -235,23 +201,23 @@ Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\
 "Explorer. Adding 'Devices and Printers' to 'This PC'..."
 New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}"
 
-"Disabling Geolocation Service autostart - If disabled, Windows won't be able to determine your location for certain apps..."
+"Disabling Geolocation Service autostart - Windows won't be able to determine your location for certain apps..."
 Set-Service -Name "lfsvc" -StartupType Manual
 
 "Disable Windows Compatibility Telemetry..."
-taskkill /f /im compattelrunner.exe 2>&1 | Out-Null
-
-Stop-Service -Name "DiagTrack" 2>&1 | Out-Null
-Set-Service -Name DiagTrack -StartupType Disabled 2>&1 | Out-Null
+Stop-Service -Name "DiagTrack" 2>&1
+$null = Set-Service -Name DiagTrack -StartupType Disabled
 
 "Enable verbvose startup/shutdown mode..."
 New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System verbosestatus -Value 1
 
 "Disable Microsoft Consumer Experiences..."
-New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue | Out-Null
+$null = New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue
 
 "Device Metadata bug fix..."
 If ((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL").DeviceMetadataServiceURL -eq "http://go.microsoft.com/fwlink/?LinkID=252669&clcid=0x409")
 {
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force -ErrorAction SilentlyContinue
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force
 }
+""
+
