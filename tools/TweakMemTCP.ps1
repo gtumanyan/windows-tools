@@ -235,11 +235,12 @@ netsh int ip set global loopbacklargemtu=disable
 "Setting BBR2 Congestion provider..."
 netsh int tcp set supplemental internet congestionprovider=bbr2
 
-"Uppping the Reassembly Out Of Order Limit for AmneziaWG with Jc=120 and MTU=1280..."
+"Increasing Reassembly Out Of Order Limit to 1300..."
+# Recommended for AmneziaWG with high junk (Jc=120) and low MTU=1280
+# Helps with heavy out-of-order fragmentation in games
 netsh int ip set global reassemblyoutoforderlimit=1300
 
 "Set-NetTCPSetting items etc..."
-
 Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue | Out-Null
 Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing Disabled -ErrorAction SilentlyContinue
 Set-NetOffloadGlobalSetting -ReceiveSideScaling Enabled -ErrorAction SilentlyContinue
