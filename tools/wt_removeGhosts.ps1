@@ -7,18 +7,18 @@
     in Device Manager, when you select "Show hidden and devices" from the view menu.  This script has been tested on Windows 2008 R2 SP2 with PowerShell 3.0, 5.1 and Server 2012R2
     with Powershell 4.0.  There is no warranty with this script.  Please use cautiously as removing devices is a destructive process without an undo.
 
-.PARAMETER filterByFriendlyName 
+.PARAMETER filterByFriendlyName
 This parameter will exclude devices that match the partial name provided. This paramater needs to be specified in an array format for all the friendly names you want to be excluded from removal.
 "Intel" will match "Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz". "Loop" will match "Microsoft Loopback Adapter".
 
-.PARAMETER filterByClass 
+.PARAMETER filterByClass
 This parameter will exclude devices that match the class name provided. This paramater needs to be specified in an array format for all the class names you want to be excluded from removal.
 This is an exact string match so "Disk" will not match "DiskDrive".
 
-.PARAMETER listDevicesOnly 
+.PARAMETER listDevicesOnly
 listDevicesOnly will output a table of all devices found in this system.
 
-.PARAMETER listGhostDevicesOnly 
+.PARAMETER listGhostDevicesOnly
 listGhostDevicesOnly will output a table of all 'ghost' devices found in this system.
 
 .EXAMPLE
@@ -45,7 +45,7 @@ Remove all ghost devices EXCEPT any devices that have "Intel" or "Citrix" in the
 Remove all ghost devices EXCEPT any devices that are apart of the classes "LegacyDriver" or "Processor"
 . "removeGhosts.ps1" -filterByClass @("LegacyDriver","Processor")
 
-.EXAMPLE 
+.EXAMPLE
 Remove all ghost devices EXCEPT for devices with a friendly name of "Intel" or "Citrix" or with a class of "LegacyDriver" or "Processor"
 . "removeGhosts.ps1" -filterByClass @("LegacyDriver","Processor") -filterByFriendlyName @("Intel","Citrix")
 
@@ -107,7 +107,7 @@ namespace Win32
            IntPtr hwndParent,
            int Flags
         );
-    
+
         // 2nd form uses an Enumerator only, with ClassGUID = IntPtr.Zero
         [DllImport("setupapi.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr SetupDiGetClassDevs(
@@ -116,14 +116,14 @@ namespace Win32
            IntPtr hwndParent,
            int Flags
         );
-        
+
         [DllImport("setupapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool SetupDiEnumDeviceInfo(
             IntPtr DeviceInfoSet,
             uint MemberIndex,
             ref SP_DEVINFO_DATA DeviceInfoData
         );
-    
+
         [DllImport("setupapi.dll", SetLastError = true)]
         public static extern bool SetupDiDestroyDeviceInfoList(
             IntPtr DeviceInfoSet
@@ -147,7 +147,7 @@ namespace Win32
             out int RequiredSize
         );
 
-    
+
         [DllImport("setupapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool SetupDiRemoveDevice(IntPtr DeviceInfoSet,ref SP_DEVINFO_DATA DeviceInfoData);
     }
@@ -211,7 +211,7 @@ namespace Win32
 }
 "@
 Add-Type -TypeDefinition $setupapi
-    
+
     #Array for all removed devices report
     $removeArray = @()
     #Array for all devices report
@@ -229,7 +229,7 @@ Add-Type -TypeDefinition $setupapi
     $devCount = 0
     #Enumerate Devices
     while([Win32.SetupApi]::SetupDiEnumDeviceInfo($devs, $devCount, [ref]$devInfo)){
-    
+
         #Will contain an enum depending on the type of the registry Property, not used but required for call
         $propType = 0
         #Buffer is initially null and buffer size 0 so that we can get the required Buffer size first
@@ -340,7 +340,7 @@ Add-Type -TypeDefinition $setupapi
             }
             if ($InstallState -eq $False) {
                 if ($matchFilter -eq $false) {
-                    Write-Host "Attempting to removing device $FriendlyName" -ForegroundColor Yellow
+                    Write-Host "Attempting to remove device $FriendlyName" -ForegroundColor Yellow
                     $removeObj = New-Object System.Object
                     $removeObj | Add-Member -type NoteProperty -name FriendlyName -value $FriendlyName
                     $removeObj | Add-Member -type NoteProperty -name HWID -value $HWID
@@ -359,7 +359,7 @@ Add-Type -TypeDefinition $setupapi
         }
         $devcount++
     }
-    
+
     #output objects so you can take the output from the script
     if ($listDevicesOnly) {
         $allDevices = $array | sort -Property FriendlyName | ft
@@ -383,6 +383,6 @@ Add-Type -TypeDefinition $setupapi
         write-host "Total removed devices     : $($removeArray.count)"
         return $removeArray | out-null
     }
-	
+
 
 
