@@ -92,15 +92,25 @@ Set-MMAgent -MaxOperationAPIFiles 1024
 
 $MMAgentSetup = Get-MMAgent
 
-If (-Not ($WinVersionStr -Like "*Windows Server 201*"))
-	{
+If (-Not ($WinVersionStr -Like "*Windows Server 201*")) {
 	If (-Not $MMAgentSetup.ApplicationPrelaunch)
 		{ Enable-MMAgent -ApplicationPreLaunch }
 	}
 If (-Not $MMAgentSetup.MemoryCompression)
 	{ Enable-MMAgent -MemoryCompression }
-If (-Not $MMAgentSetup.OperationAPI)
-	{ Enable-MMAgent -OperationAPI  }
+# OperationAPI: May be hard-locked on NVMe systems or missing SysMain
+If (-Not $MMAgentSetup.OperationAPI) {
+	Try {Enable-MMAgent -OperationAPI -ErrorAction Stop
+        Write-Host "  [OK] OperationAPI enabled" -ForegroundColor Green
+	} Catch {
+	    # Specifically catch the "Error 50" or "Not Supported" scenario
+        If ($_.Exception.Message -match "not supported" -or $_.FullyQualifiedErrorId -match "50") {
+            Write-Host "  [LOCKED] OperationAPI is hard-locked by the OS (likely NVMe SSD or missing SysMain service). This is expected on fast storage." -ForegroundColor Yellow
+        } Else {
+            Write-Warning "  [FAIL] Could not enable OperationAPI: $($_.Exception.Message)"
+        }
+	}
+}
 If (-Not $MMAgentSetup.PageCombining)
 	{ Enable-MMAgent -PageCombining }
 
@@ -220,4 +230,3 @@ If ((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Dev
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" -Name "DeviceMetadataServiceURL" -Value "http://dmd.metaservices.microsoft.com/dms/metadata.svc" -Force
 }
 ""
-
