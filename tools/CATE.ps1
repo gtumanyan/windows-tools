@@ -1,4 +1,3 @@
-
 <#PSScriptInfo
 
 .VERSION 7.5
@@ -48,7 +47,7 @@ Param()
 # CATE: Clean All Temp Etc. #
 #############################
 
-#
+
 # by Jonathan E. Brickman
 #
 # Cleans temp files from all user profiles and
@@ -61,7 +60,6 @@ Param()
 # and is reprised at the end of this file
 #
 
-# Self-elevate if not already elevated.
 
 "*************************"
 "   Clean All Temp Etc.   "
@@ -93,6 +91,7 @@ $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 $originalLocation = Get-Location
 
 $CATEStatus = ""
+
 
 # Get initial free disk space.
 
@@ -134,10 +133,12 @@ Write-Output $strOut
 "Working..."
 ""
 
+
 # Here is an external variable to contain the "Status" text
 # for progress reporting.
 
 $CATEStatus = "Working..."
+
 
 # Now we set up an array containing folders to be checked for and
 # cleaned out if present, for every Windows user profile.
@@ -171,6 +172,7 @@ $ffFoldersToClean = @(
 	"chromeappstore.sqlite"
 	)
 
+
 # A quasiprimitive for progress reporting.
 
 function ShowCATEProgress {
@@ -186,6 +188,7 @@ function ShowCATEProgress {
 	# Write-Progress is not compatible with some remote shell methods.
 }
 
+
 # Rewriting the delete primitives, as effectively as possible, without inline C#.
 #
 # For decent speed, need to use parallelism of some sort.
@@ -195,7 +198,7 @@ function ShowCATEProgress {
 # Using ROBOCOPY's multitasking instead.  ROBOCOPY does not, reportedly, suffer from
 # the maximum line length situation and others which requires -Literalpath in some coding.
 
-$randomFolderName = -join ((65..90) + (97..122) | Get-Random -Count 10 | % {[char]$_})
+$randomFolderName = -join ((65..90) + (97..122) | Get-Random -Count 10 | ForEach-Object {[char]$_})
 $envUserProfile = $env:UserProfile
 $blankFolder = $envUserProfile + '\' + $randomFolderName
 New-Item $blankFolder -Force -ItemType Container | Out-Null
@@ -205,7 +208,8 @@ If ( !(Test-Path $blankFolder -PathType Container -ErrorAction SilentlyContinue)
 		Exit
 		}
 
-# CATE-Delete is a functional recursive primitive,
+
+# Delete-Item is a functional recursive primitive,
 # useful for absolute deletes of items and trees, and
 # also callable for more selective uses
 
@@ -221,7 +225,7 @@ function Test-ReparsePoint([string]$literalPath) {
 	return [bool]($file.Attributes -band [IO.FileAttributes]::ReparsePoint)
 	}
 
-function CATE-Delete {
+function Delete-Item {
     param([string]$deletePath)
 
 	# If the folder isn't there or we can't touch it, we're done
@@ -229,7 +233,7 @@ function CATE-Delete {
 	catch {Return}
 
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
-	# exit CATE-Delete silently
+	# exit Delete-Item silently
     if (Test-ReparsePoint $deletePath) {return}
 
     ShowCATEProgress $CATEStatus $deletePath
@@ -245,7 +249,7 @@ function CATE-Delete {
 
         # Fallback recursive delete for stubborn items
         Get-ChildItem -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue |
-            ForEach-Object { CATE-Delete "$deletePath\$_" }
+            ForEach-Object { Delete-Item "$deletePath\$_" }
     }
 }
 
@@ -262,7 +266,7 @@ function CATE-Delete-Folder-Contents {
 		}
 
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
-	# exit CATE-Delete silently
+	# exit Delete-Item silently
 	If (Test-ReparsePoint($deletePath))
 		{ Return }
 
@@ -283,9 +287,9 @@ function CATE-Delete-Folder-Contents {
 	# ROBOCOPY is current default method, for parallelism.
 	ROBOCOPY $blankFolder $deletePath /MIR /R:1 /W:1 /MT:10 /NFL /NDL /NJH /NJS /NC /NS /NP *> $null
 
-	# Now try to delete everything left inside, using CATE-Delete.
+	# Now try to delete everything left inside, using Delete-Item.
 	Get-ChildItem -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue | ForEach-Object {
-		CATE-Delete ($deletePath + '\' + $_)
+		Delete-Item ($deletePath + '\' + $_)
 		}
 	""
 	}
@@ -303,7 +307,7 @@ function CATE-Delete-Files-Only {
 		}
 
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
-	# exit CATE-Delete silently
+	# exit Delete-Item silently
 	If (Test-ReparsePoint($deletePath))
 		{ Return }
 
@@ -379,7 +383,7 @@ $ProfileList | ForEach-Object {
 		}
 
     # A subpath to be eliminated altogether, also present in the $foldersToClean list above
-    CATE-Delete ($profileItem.ProfileImagePath + '\AppData\Local\AskPartnerNetwork')
+    Delete-Item ($profileItem.ProfileImagePath + '\AppData\Local\AskPartnerNetwork')
 
 	# Recreate Windows TEMP folder subpaths, prevents issues in a number of oddball situations
 	Replace-Numbered-Temp-Folders ($profileItem.ProfileImagePath + '\AppData\Local\Temp') -Force -ErrorAction SilentlyContinue | Out-Null
@@ -447,9 +451,11 @@ CATE-Delete-Folder-Contents ($envProgramData + '\SAAZOD\ApplicationLog\zSCCLog')
 # Modified from this:
 # CATE-Delete-Folder-Contents ($envSystemRoot + "\Servicing\LCU")
 
-function CATE-Clear-LCU {
-	param( [string]$deletePath )
+# Modified from this:
+# CATE-Delete-Folder-Contents ($envSystemRoot + "\Servicing\LCU")
 
+function Clear-LCU {
+	param( [string]$deletePath )
 	# If the folder isn't there or we can't touch it, we're done
 	try {
 		$null = Test-Path -LiteralPath $deletePath -PathType Container -ErrorAction SilentlyContinue
@@ -458,7 +464,7 @@ function CATE-Clear-LCU {
 		{ Return }
 
 	# If $deletePath is a ReparsePoint, if it is a link or a junction,
-	# exit CATE-Delete silently
+	# exit Delete-Item silently
 	If (Test-ReparsePoint($deletePath))
 		{ Return }
 
@@ -492,14 +498,14 @@ function CATE-Clear-LCU {
 	# ROBOCOPY is current default method, for parallelism.
 	ROBOCOPY $blankFolder $deletePath /MIR /R:1 /W:1 /MT:10 /NFL /NDL /NJH /NJS /NC /NS /NP *> $null
 
-	# Now try to delete everything left inside, using CATE-Delete.
+	# Now try to delete everything left inside, using Delete-Item.
 	Get-ChildItem -LiteralPath $deletePath -Name -Force -ErrorAction SilentlyContinue | ForEach-Object {
-		CATE-Delete ($deletePath + '\' + $_)
+		Delete-Item ($deletePath + '\' + $_)
 		}
 	""
 	}
 
-CATE-Clear-LCU ($envSystemRoot + "\Servicing\LCU")
+Clear-LCU ($envSystemRoot + "\Servicing\LCU")
 
 
 # Clear the Group Policy client-side cache
@@ -522,9 +528,9 @@ function Background-Run-For-Five-Minutes-Max {
 	$JobGUID = [system.Guid]::NewGuid()
 
 	$elapsedEventHandler = {
-		param ([System.Object]$sender, [System.Timers.ElapsedEventArgs]$e)
+		param ([System.Object]$timer, [System.Timers.ElapsedEventArgs]$e)
 
-		($sender -as [System.Timers.Timer]).Stop()
+		($timer -as [System.Timers.Timer]).Stop()
 		Unregister-Event -SourceIdentifier $JobGUID
 		Write-Host "Job $JobGUID removed by force as it exceeded timeout!"
 		Get-Job -Name $JobGUID | Remove-Job -Force
@@ -543,6 +549,7 @@ Write-Output ''
 Write-Output "Setting up background job to compact the Windows Update database, will run 5 minutes max..."
 Write-Output ''
 
+
 $CompactWindowsUpdateDatabase = {
 	$wudb = $envSystemRoot + '\SoftwareDistribution\DataStore\DataStore.edb'
 	if (Test-Path -Path $wudb -PathType Leaf) {
@@ -559,8 +566,10 @@ $CompactWindowsUpdateDatabase = {
 
 Background-Run-For-Five-Minutes-Max $CompactWindowsUpdateDatabase
 
+
 ""
 ""
+
 
 $strOut = RptDriveSpace( $initialFreeSpace )
 $strOut = "Initial free space (all drives): " + $strOut + " megabytes."
@@ -578,13 +587,17 @@ Write-Output ""
 Write-Output $strOut
 Write-Output ""
 
+
 Remove-Item $blankFolder -Force -Recurse -ErrorAction SilentlyContinue
 Set-Location $originalLocation
 
+
 Write-Progress "Done!" -Completed
 Write-Progress "Done!" -Completed
 
+
 exit
+
 
 # The 3-Clause BSD License
 
