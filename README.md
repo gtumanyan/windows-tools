@@ -1,6 +1,6 @@
 # windows-tools
 
-This is a toolset to improve the performance of Windows desktop and server operating systems.  Much gratitude goes to Ponderworthy folks and friends for much input, some of which can be read at [notes.ponderworthy.com](https://notes.ponderworthy.com).
+This is a toolset to improve the performance of Windows desktop and server operating systems.  Initial project of Ponderworthy folks and friends.
 
 ## To launch the script download and run
 
@@ -81,5 +81,6 @@ By default, USB root hubs turn themselves off when idle, which has the effect of
 ## Donations
 
 You can support my work on maintaining and further developing the script by <a href="https://boosty.to/snappydriverinstaller/donate"><img src="https://boosty.to/favicon.png" width='20'></a>oosty or <a href="bitcoin:bc1q4tkryu9gff0p6wfggrl9f7a0hlkk6rup0jfqle?message=support%20SDI"><img src=https://bitcoin.org/favicon.png  alt="BTC" width='20'/>itcoin
+
 
 
