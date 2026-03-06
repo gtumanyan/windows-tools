@@ -145,8 +145,8 @@ function Remove-Package {
 		$AppxPackageNames = ($AllAppxPackages | Where-Object -Property 'Name' -EQ -Value $Name).PackageFullName
 		if ($AppxPackageNames) {
 			"Removing $Name ..."
-			Remove-AppxPackage $AppxPackageNames -ErrorAction SilentlyContinue
-			Remove-AppxPackage $AppxPackageNames -Allusers -ErrorAction SilentlyContinue
+			Remove-AppxPackage $AppxPackageNames[$Name] -ErrorAction SilentlyContinue
+			Remove-AppxPackage $AppxPackageNames[$Name] -Allusers -ErrorAction SilentlyContinue
 		}
 	}
 }
@@ -221,7 +221,7 @@ else {
 }
 
 # control panel (icons view) > date and time (timedate.cpl) > internet time
-$TimeServer = switch ('Cloudflare') {
+$TimeServer = switch ('Windows') {
 	'OpenWRT' { '0.openwrt.pool.ntp.org 1.openwrt.pool.ntp.org 2.openwrt.pool.ntp.org 3.openwrt.pool.ntp.org' }
 	'Cloudflare' { 'time.cloudflare.com' }
 	'Windows' { 'time.windows.com' }
