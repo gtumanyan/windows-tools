@@ -27,7 +27,7 @@
 .RELEASENOTES
 mma-appx-etc - performance gains of several kinds new to Windows 8/10/201*
 Configures MMAgent (including Superfetch, Memory Compression, etc.) for performance,
-removes several consumer-grade appx items, disables preload of Edge Browser,
+removes several consumer-grade appx items, removes Edge Browser,
 and disables Game Mode.
 #>
 
@@ -144,8 +144,13 @@ function Remove-Package {
 		$AppxPackageNames = ($AllAppxPackages | Where-Object -Property 'Name' -EQ -Value $Name).PackageFullName
 		if ($AppxPackageNames) {
 			"Removing $Name ..."
-			$AppxPackageNames|Remove-AppxPackage -ErrorAction SilentlyContinue
-			$AppxPackageNames|Remove-AppxPackage -Allusers -ErrorAction SilentlyContinue
+			
+            # The progress bar of Remove-AppxPackage mess up the terminal rendering.
+            # Use a PowerShell child process as workaround.
+			powershell -args AppxPackageNames -NoProfile -Command{
+				$args | Remove-AppxPackage -ErrorAction SilentlyContinue
+				$args | Remove-AppxPackage -Allusers -ErrorAction SilentlyContinue
+			}
 		}
 	}
 }
