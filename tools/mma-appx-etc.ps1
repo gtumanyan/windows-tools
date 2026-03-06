@@ -221,6 +221,7 @@ else {
 
 # control panel (icons view) > date and time (timedate.cpl) > internet time
 $TimeServer = switch ('Windows') {
+$TimeServer = switch ('Windows') {
 	'OpenWRT' { '0.openwrt.pool.ntp.org 1.openwrt.pool.ntp.org 2.openwrt.pool.ntp.org 3.openwrt.pool.ntp.org' }
 	'Cloudflare' { 'time.cloudflare.com' }
 	'Windows' { 'time.windows.com' }
