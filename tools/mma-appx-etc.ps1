@@ -116,8 +116,7 @@ If (-Not $MMAgentSetup.OperationAPI) {
 If (-Not $MMAgentSetup.PageCombining)
 { Enable-MMAgent -PageCombining }
 
-"
-Removing appx's..."
+""
 
 # Will add deprovisioning:  Remove-AppxProvisionedPackage -Online -PackageName MyAppxPkg
 
@@ -145,8 +144,8 @@ function Remove-Package {
 		$AppxPackageNames = ($AllAppxPackages | Where-Object -Property 'Name' -EQ -Value $Name).PackageFullName
 		if ($AppxPackageNames) {
 			"Removing $Name ..."
-			Remove-AppxPackage $AppxPackageNames -ErrorAction SilentlyContinue
-			Remove-AppxPackage $AppxPackageNames -Allusers -ErrorAction SilentlyContinue
+			$AppxPackageNames|Remove-AppxPackage -ErrorAction SilentlyContinue
+			$AppxPackageNames|Remove-AppxPackage -Allusers -ErrorAction SilentlyContinue
 		}
 	}
 }
@@ -221,7 +220,7 @@ else {
 }
 
 # control panel (icons view) > date and time (timedate.cpl) > internet time
-$TimeServer = switch ('Cloudflare') {
+$TimeServer = switch ('Windows') {
 	'OpenWRT' { '0.openwrt.pool.ntp.org 1.openwrt.pool.ntp.org 2.openwrt.pool.ntp.org 3.openwrt.pool.ntp.org' }
 	'Cloudflare' { 'time.cloudflare.com' }
 	'Windows' { 'time.windows.com' }
