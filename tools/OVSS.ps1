@@ -111,7 +111,13 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 # This includes all volumes which are VSS-aware, whether or not they have
 # drive letters.
 
-$VSSVolumesData = (vssadmin list volumes)
+$VSSVolumesData = vssadmin list volumes 2>$null
+
+if ($VSSVolumesData -notmatch 'Shadow Copies Found.*[1-9]') {
+    Write-Warning "No VSS shadow copies found. Skipping script execution."
+    exit 0
+}
+
 ForEach ($DataLine in $VSSVolumesData) {
     If ((-join $DataLine[0..12]) -eq "Volume path: ") {
         $VolumeID = (-join $DataLine[13..60])
