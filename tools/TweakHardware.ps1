@@ -25,7 +25,7 @@
 
 .RELEASENOTES
 TweakHardware
-This tool changes NIC settings for performance, and turns off USB power saving.
+This tool changes NIC settings for performance.
 
 Documentation on these settings has ranged from sparse to none over many years.
 The early Microsoft documents used in the calculations appear completely gone,
@@ -37,44 +37,16 @@ to work well on all.
 
 #> 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Param()
 
-
 ##############################################################
-# Tweak Hardware: NIC performance, disable USB power saving, #
-# and printer spooler cleanup                            #
+# Tweak Hardware: NIC performance and printer spooler cleanup#
 ##############################################################
 
 #
 # by Jonathan E. Brickman
 #
-# Tweaks NIC(s) for performance, and disables power saving for all
-# USB devices, and also does a very special cleanup of the Windows printer spooler.
+# Tweaks NIC(s) for performance and also does a very special cleanup of the Windows printer spooler.
 #
 # Copyright 2020 Jonathan E. Brickman
 # https://notes.ponderworthy.com/
@@ -85,10 +57,9 @@ Param()
 
 ""
 ""
-"*****************************************************************************"
-" TweakHardware: Tweak NICs for performance, disable USB power saving,   "
-" and printer spooler cleanup "
-"*****************************************************************************"
+"***********************************************************************"
+" TweakHardware: Tweak NICs for performance and printer spooler cleanup "
+"***********************************************************************"
 ""
 ""
 
@@ -237,53 +208,6 @@ Get-NetAdapter | ForEach-Object {
 		}
 		
 	}
-
-""
-"Turning off power management for USB root hubs and controllers..."
-
-
-# This seems to work for a lot of them.  
-
-# Not using Get-CimObject because some hardware does not work with that.
-
-# This seems to list all relevant devices:
-# gwmi -list | ?{ $_.Name -cmatch "USB" }
-
-$hubs = Get-WmiObject Win32_USBHub
-$counthubs = $hubs.Count
-"Setting for $counthubs USB hubs."
-$powerMgmt = Get-WmiObject MSPower_DeviceEnable -Namespace root\wmi
-foreach ($p in $powerMgmt)
-{
-  $IN = $p.InstanceName.ToUpper()
-  foreach ($h in $hubs)
-  {
-    $PNPDI = $h.PNPDeviceID
-                if ($IN -like "*$PNPDI*")
-                {
-                    $p.enable = $False
-                    $p.psbase.put() | Out-Null
-                }
-  }
-}
-
-$Controllers = Get-WmiObject Win32_USBController
-$ControllerCount = $Controllers.Count
-"Setting for $ControllerCount USB controllers."
-$powerMgmt = Get-WmiObject MSPower_DeviceEnable -Namespace root\wmi
-foreach ($p in $powerMgmt)
-{
-  $IN = $p.InstanceName.ToUpper()
-  foreach ($h in $Controllers)
-  {
-    $PNPDI = $h.PNPDeviceID
-                if ($IN -like "*$PNPDI*")
-                {
-                    $p.enable = $False
-                    $p.psbase.put() | Out-Null
-                }
-  }
-}
 
 ""
 "Performing special cleanup of Windows printer spooler registry area..."
