@@ -147,7 +147,7 @@ function Remove-Package {
 			
             # The progress bar of Remove-AppxPackage mess up the terminal rendering.
             # Use a PowerShell child process as workaround.
-			powershell -args AppxPackageNames -NoProfile -Command{
+			powershell -args $AppxPackageNames -NoProfile -Command{
 				$args | Remove-AppxPackage -ErrorAction SilentlyContinue
 				$args | Remove-AppxPackage -Allusers -ErrorAction SilentlyContinue
 			}
