@@ -160,13 +160,19 @@ $PreinstalledAppsToRemove = @(
 	'AppUp.IntelArcSoftware'
 	'Microsoft.Advertising.Xaml'
 	'Microsoft.BingNews'
+	'Microsoft.BingSearch'
 	'Microsoft.BingWeather'
+  	'Microsoft.Edge.GameAssist'
+  	'Microsoft.GetHelp'
 	'Microsoft.Getstarted'
 	'Microsoft.M365Companions'
 	'Microsoft.MicrosoftOfficeHub'
 	'Microsoft.MicrosoftSolitaireCollection'
+  	'Microsoft.OutlookForWindows'
 	'Microsoft.People' # old
+  	"Microsoft.PowerAutomateDesktop"
 	'Microsoft.StorePurchaseApp'
+  	"Microsoft.Windows.DevHome"
 	'Microsoft.WindowsFeedbackHub'
 	'Microsoft.YourPhone'
 	'Microsoft.ZuneMusic'
