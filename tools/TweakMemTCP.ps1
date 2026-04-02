@@ -224,9 +224,6 @@ setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" Hosts
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" DnsPriority "6"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" NetbtPriority "7"
 
-setupDWORD "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched" "NonBestEffortLimit" "50"
-
-
 # Disabling Network Throttling increases DPC latency https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
 # setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" "0xffffffff"
 
@@ -234,7 +231,8 @@ setupDWORD "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched" "NonBestEffortLimi
 netsh int ip set global loopbacklargemtu=disable
 "Setting BBR2 Congestion provider..."
 netsh int tcp set supplemental internet congestionprovider=bbr2
-
+"Disabling Memory pressure protection (SYN flood drop)"
+netsh int tcp set security mpp=disabled
 "Increasing Reassembly Out Of Order Limit to 1300..."
 # Recommended for AmneziaWG with high junk (Jc=120) and low MTU=1280
 # Helps with heavy out-of-order fragmentation in games
@@ -253,8 +251,8 @@ Disable-NetAdapterLso -Name * -ErrorAction SilentlyContinue
 Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyContinue
 # TCP retransmission timeout, readonly
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue
-Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency disabled -ErrorAction SilentlyContinue
-Set-NetTCPSetting -SettingName "*" -InitialRto 1000 -ErrorAction SilentlyContinue
+Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency enabled -ErrorAction SilentlyContinue
+Set-NetTCPSetting -SettingName "*" -InitialRto 2000 -ErrorAction SilentlyContinue
 try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skipping..."}
 # Connect retry attempts using SYN packets
 Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction SilentlyContinue
