@@ -260,20 +260,26 @@ if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*
 "Disabling AutoGameMode..."
 $null = Set-ItemProperty -Path HKCU:\Software\Microsoft\GameBar -Name AutoGameModeEnabled -Value 0 -Force
 
-"Letting Windows improve Start and search results by tracking app launches (Remember commands typed in Run)..." # 0 - Disable and Disable "Show most used apps"
+"Letting Windows improve Start and search results by tracking app launches (Remember commands typed in Run)..."
 Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'Start_TrackProgs' -Type DWord -Value 1 -Force
 
 "Explorer. Adding 'Devices and Printers' to 'This PC'..."
 New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}"
 
-"Disable Windows Compatibility Telemetry..."
+"Disabling Connected User Experiences and Telemetry..."
 Stop-Service -Name "DiagTrack" 2>&1
 $null = Set-Service -Name DiagTrack -StartupType Disabled
 
-"Enable verbvose startup/shutdown mode..."
+"Setting 'Startup/Shutdown Verbose Status Messages..."
 New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System verbosestatus -Value 1
 
-"Disable Microsoft Consumer Experiences..."
+"Turning off Microsoft consumer experiences (will help prevent the unwanted installation of suggested applications)..."
 $null = New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue
+
+"Setting Windows Terminal Preview to Automatically copy selection to clipboard..."
+$userSettingsPath = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
+$json = Get-Content $userSettingsPath -Raw | ConvertFrom-Json
+$json.copyOnSelect = $true
+$json | ConvertTo-Json -Depth 20 | Set-Content $userSettingsPath -Encoding UTF8 -Force
 
 ""
