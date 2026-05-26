@@ -145,9 +145,9 @@ function Remove-Package {
 		if ($AppxPackageNames) {
 			"Removing $Name ..."
 			
-            # The progress bar of Remove-AppxPackage mess up the terminal rendering.
-            # Use a PowerShell child process as workaround.
-			powershell -args $AppxPackageNames -NoProfile -Command{
+			# The progress bar of Remove-AppxPackage mess up the terminal rendering.
+			# Use a PowerShell child process as workaround.
+			powershell -args $AppxPackageNames -NoProfile -Command {
 				$args | Remove-AppxPackage -ErrorAction SilentlyContinue
 				$args | Remove-AppxPackage -Allusers -ErrorAction SilentlyContinue
 			}
@@ -162,17 +162,17 @@ $PreinstalledAppsToRemove = @(
 	'Microsoft.BingNews'
 	'Microsoft.BingSearch'
 	'Microsoft.BingWeather'
-  	'Microsoft.Edge.GameAssist'
-  	'Microsoft.GetHelp'
+	'Microsoft.Edge.GameAssist'
+	'Microsoft.GetHelp'
 	'Microsoft.Getstarted'
 	'Microsoft.M365Companions'
 	'Microsoft.MicrosoftOfficeHub'
 	'Microsoft.MicrosoftSolitaireCollection'
-  	'Microsoft.OutlookForWindows'
+	'Microsoft.OutlookForWindows'
 	'Microsoft.People' # old
-  	"Microsoft.PowerAutomateDesktop"
+	"Microsoft.PowerAutomateDesktop"
 	'Microsoft.StorePurchaseApp'
-  	"Microsoft.Windows.DevHome"
+	"Microsoft.Windows.DevHome"
 	'Microsoft.WindowsFeedbackHub'
 	'Microsoft.YourPhone'
 	'Microsoft.ZuneMusic'
@@ -276,10 +276,18 @@ New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\
 "Turning off Microsoft consumer experiences (will help prevent the unwanted installation of suggested applications)..."
 $null = New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue
 
-"Setting Windows Terminal Preview to Automatically copy selection to clipboard..."
-$userSettingsPath = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
-$json = Get-Content $userSettingsPath -Raw | ConvertFrom-Json
-$json.copyOnSelect = $true
-$json | ConvertTo-Json -Depth 20 | Set-Content $userSettingsPath -Encoding UTF8 -Force
+"Setting Windows Terminal to Automatically copy selection to clipboard..."
+$packageNames = @(
+	"Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe",
+	"Microsoft.WindowsTerminal_8wekyb3d8bbwe"
+)
+foreach ($pkg in $packageNames) {
+	$userSettingsPath = "$env:LOCALAPPDATA\Packages\$pkg\LocalState\settings.json"
+	if (Test-Path $userSettingsPath) {
+		$json = Get-Content $userSettingsPath -Raw | ConvertFrom-Json
+		$json.copyOnSelect = $true
+		$json | ConvertTo-Json -Depth 20 | Set-Content $userSettingsPath -Encoding UTF8 -Force
+	}
+}
 
 ""
