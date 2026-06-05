@@ -1,6 +1,6 @@
 # Run in Elevated PowerShell
-$ErrorActionPreference = 'Stop'
-$ProgressPreference    = 'SilentlyContinue'
+$ErrorActionPreference = 'Inquire'
+# $ProgressPreference    = 'SilentlyContinue'
 
 $Arch = 'x64'  # change to 'arm64' on ARM devices
 
@@ -10,30 +10,26 @@ $releases = Invoke-RestMethod -Uri $apiUrl -Headers @{ 'User-Agent' = 'PowerShel
 $latest = $releases[0]
 Write-Host "Using release: $($latest.tag_name)" -ForegroundColor Cyan
 
-$bundleAsset = $latest.assets | Where-Object { $_.name -eq 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' }
-$depAsset    = $latest.assets | Where-Object { $_.name -eq 'DesktopAppInstaller_Dependencies.zip' }
-
+$depZip = 'DesktopAppInstaller_Dependencies.zip'
+$depAsset = $latest.assets | Where-Object { $_.name -eq $depZip }
+if (-not $depAsset) { throw 'Could not find Dependencies ZIP asset in latest release.' }
+$bundle = 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
+$bundleAsset = $latest.assets | Where-Object { $_.name -eq $bundle }
 if (-not $bundleAsset) { throw 'Could not find msixbundle asset in latest release.' }
-if (-not $depAsset)    { throw 'Could not find Dependencies ZIP asset in latest release.' }
 
-$depZip    = 'DesktopAppInstaller_Dependencies.zip'
-$bundle    = 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
-$checkFile = 'check.txt'
-
-# --- Skip download if the bundle URL hasn't changed and local files exist ---
-$cachedUrl = if (Test-Path $checkFile) { (Get-Content $checkFile -Raw -ErrorAction SilentlyContinue).Trim() } else { '' }
-$latestUrl = $bundleAsset.browser_download_url
-
-if ($cachedUrl -eq $latestUrl -and (Test-Path $bundle) -and (Test-Path $depZip)) {
+# --- Skip download if the bundle hasn't changed and local files exist ---
+if ((Get-FileHash  $bundle).Hash.ToLower() -eq $bundleAsset.digest -replace '^sha256:') {
     Write-Host 'Files already up-to-date — skipping download.' -ForegroundColor Green
-} else {
-    Write-Host 'Downloading new release files...' -ForegroundColor Yellow
-    Invoke-WebRequest -Uri $depAsset.browser_download_url  -OutFile $depZip
-    Invoke-WebRequest -Uri $bundleAsset.browser_download_url -OutFile $bundle
-    Set-Content -Path $checkFile -Value $latestUrl -NoNewline
 }
-
-Expand-Archive -Path $depZip -DestinationPath . -Force
+else {
+    Write-Host 'Downloading new release files...' -ForegroundColor Yellow
+    # --- Skip download of the DesktopAppInstaller_Dependencies.zip if hash hasn't changed and local files exist ---
+    if ((Get-FileHash $depZip).Hash.ToLower() -ne ($depAsset.digest -replace '^sha256:')) {
+        Invoke-WebRequest -Uri $depAsset.browser_download_url  -OutFile $depZip 
+        Expand-Archive -Path $depZip -DestinationPath . -Force
+    }
+    Invoke-WebRequest -Uri $bundleAsset.browser_download_url -OutFile $bundle
+}
 
 # --- 2) Collect all arch-matching .appx deps from the ZIP ---
 $deps = Get-ChildItem -Path . -Recurse -Filter "*.appx" |
