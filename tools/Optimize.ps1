@@ -48,6 +48,7 @@ try {
         'CATE.ps1',
         'TweakHardware.ps1',
         'TweakMemTCP.ps1',
+        'Winget_LTSC_Installer.ps1',
         'TweakDrives.ps1'
     )
 
