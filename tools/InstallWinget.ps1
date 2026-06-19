@@ -1,5 +1,5 @@
 # Run in Elevated PowerShell
-$ErrorActionPreference = 'Inquire'
+$ErrorActionPreference = 'SilentlyContinue'
 # $ProgressPreference    = 'SilentlyContinue'
 
 $Arch = 'x64'  # change to 'arm64' on ARM devices
