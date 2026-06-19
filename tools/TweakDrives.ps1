@@ -169,8 +169,6 @@ function Unzip {
 
 function Install-Contig {
     
-	$StartupDir = $pwd
-
 	# First, set up temporary space and move there.
 
 	"Setting up to download Contig..."
