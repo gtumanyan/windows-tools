@@ -78,44 +78,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 
 # Now we make changes.
 # http://www.tomsitpro.com/articles/powershell_registry-powershell_command_line,2-152.html
-
-# The settings come from a quite reliable source:
-# https://support.storagecraft.com/s/article/Tuning-Guide-for-StorageCraft-Software-on-Servers?language=en_US
-
-function EnableHyperVEnhancedMode
-{
-	[System.ComponentModel.Description(
-		'Disable Windows Hello to allow Enhanced mode sessions for Hyper-V VMs')]
-	[CmdletBinding(HelpURI='cmd')] param()
-
-	# Fixes the problem where you can't log on when connecting to a VM in enhanced mode due
-	# to a conflict in how Windows Hello works, so must disable it to allow enhanced mode.
-	# Also (doesn't :-/ ) fixes the problem where BioIso.exe runs multiple instances,
-	# eating up CPU, even though corporate has disabled Windows Hello via policy
-
-	# are we running in a Hyper-V VM?
-	if ((gwmi Win32_BaseBoard).Manufacturer -eq 'Microsoft Corporation')
-	{
-		Write-Verbose 'disabling Windows Hello for this VM'
-		# 0=disabled, 2=enabled
-		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
-		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0
-	}
-	else
-	{
-		Write-Verbose 'disabling Windows Hello to improve RDP to this Win11 machine'
-		$0 = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device'
-		if (!(Test-Path $0)) { New-Item -Path $0 | Out-Null }
-		# 0=disabled, 2=enabled
-		Set-ItemProperty $0 -Name 'DevicePasswordLessBuildVersion' -Type DWord -Value 0
-
-		## this disables PIN!
-		# 0=disabled, 1=enabled
-		#$0 = 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Settings\AllowSignInOptions'
-		#Set-ItemProperty $0 -Name 'value' -Type DWord -Value 0
-	}
-}
-
 function setupDWORD {
     param( [string]$regPath, [string]$nameForDWORD, [long]$valueForDWORD )
 
@@ -207,8 +169,6 @@ catch
     Write-Host 'Error' -ForegroundColor Yellow
   }
 }
-
-EnableHyperVEnhancedMode
 
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "Size" "3"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" "65534"

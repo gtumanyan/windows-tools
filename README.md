@@ -4,16 +4,27 @@ This is a toolset to improve the performance of Windows desktop and server opera
 
 ## To launch the script download and run
 
-[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which, if run as administrator, will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [RunDevNodeClean](#rundevnodeclean), then [wt_removeGhosts](#wt_removeghosts-remove-ghost-devices-from-windows), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
+[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [RunDevNodeClean](#rundevnodeclean), then [wt_removeGhosts](#wt_removeghosts-remove-ghost-devices-from-windows), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
+
+* If you launch the script with the `-winget` parameter, [InstallWinget](#install-winget) will run **first** before all optimizations.
+
+No need to run as admin, the script will relaunch itself with admin privilleges.
 
 ## or just execute
+
 ```powershell
 irm windr.msk.ru | iex
 ```
 
+If you want to install the Windows Package Manager (Winget, works on LTSC/Server systems without Microsoft Store), run:
+
 ## GETREDISTS.CMD:  Get and update Microsoft VC++ redistributables using GetRedists.ps1
 
 Lots of software uses Microsoft VC++ redistributables.  They get updated fairly often and almost never automatically.  To bring all of yours up to date and install all the newers which Microsoft supports, run [GETREDISTS.CMD](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/RUN/GETREDISTS.CMD) to call GetRedists.ps1.  Requires PowerShell 5.1, and automatically pulls in the VcRedist module.
+
+## Install WinGet
+
+By default, Windows LTSC editions, Windows Server, and custom stripped Windows builds do not ship with Windows Package Manager (Winget) or the Microsoft Store required to install it via official channels. This script installs the latest build of Winget with all required dependencies, no Microsoft Store required, and works on all supported Windows versions starting with Windows 10 1607 / Server 2016. It does not run automatically as part of the default optimization set — it is only added to the run queue if you pass -winget parameter on launch.
 
 ## MMA-AppX-etc
 
@@ -63,13 +74,13 @@ This tool is no longer run automatically by any of the OPTIMIZE items.  Newer Mi
 
 By default, in Windows since XP/2003, if a folder is shared to the network via SMB, so-called "caching" is turned on.  This actually means that the Offline Files service on *other* machines accessing the share, are allowed to retrieve and store copies of files and folders on the machine acting as server.  Turning this off for all shares gives a speed bump for the server machine, and also improves reliability overall, dependence on Offline Files can lead to all sorts of issues including data loss when the server is not available or suddenly becomes available et cetera.  [TOSC](https://github.com/gtumanyan/windows-tools/raw/master/tools/TOSC.ps1) does this very well, for all file shares extant on the machine on which it is run.
 
-## OVSS:  Optimize VSS
+## OVSS: Optimize VSS
 
 By default, on Windows client OS systems, VSS is active on all VSS-aware volumes, but it is not optimized, which in this case means, there is an "association" or preallocation, of zero space.  On Windows server OS systems, VSS is likewise active, but there is no association/preallocation, at all, on any VSS-aware volumes.  Many different Windows tools' documentation includes recommendations concerning this, some stating that every volume to be backed up should have 20% of its space "associated" or preallocated for VSS, others recommending UNBOUNDED.    [OVSS](https://github.com/gtumanyan/windows-tools/raw/master/tools/OVSS.ps1) does this, and also, makes a simple attempt to reduce orphan shadows.  Orphan shadows are VSS snapshots existing uselessly because of old aborted backups, slowing down drive access, and building up space in System Volume Information.  OVSS does not try to address SVI buildup thoroughly, for this [please see this page.](https://notes.ponderworthy.com/thorough-cleanup-of-vss)
 
 ## CATE: (C)lean (A)ll system and user profile (T)emp folders, (E)tcetera
 
-For quite a while I had been curious as to why a simple method to do this was not available. CCLEANER and others do not reach into every user profile, and on many machines this is crucial, e.g., terminal servers. CATE was originated as a .VBS by the excellent David Barrett ( http://www.cedit.biz ) and has been rewritten thoroughly by yours truly (JEB of Ponderworthy). The current VBS is [here.](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/old-vbs/CATE.vbs)  But [the most recent version](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/tools/CATE.ps1) is a PowerShell script, which adds removal of Ask Partner Network folders from user profiles, and a good bit more speed and clean running; future development will be in PowerShell.
+For quite a while I had been curious as to why a simple method to do this was not available. CCLEANER and others do not reach into every user profile, and on many machines this is crucial, e.g., terminal servers. CATE was originated as a .VBS by the excellent David Barrett ( <http://www.cedit.biz> ) and has been rewritten thoroughly by yours truly (JEB of Ponderworthy). The current VBS is [here.](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/old-vbs/CATE.vbs)  But [the most recent version](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/tools/CATE.ps1) is a PowerShell script, which adds removal of Ask Partner Network folders from user profiles, and a good bit more speed and clean running; future development will be in PowerShell.
 
 One thing discovered along the way, is even in XP there was a user profile called the “System Profile” — XP had it in C:\WINDOWS\System32\config\systemprofile — and some malware dumps junk into it, and sometimes many gigs of unwanted files can be found in its temporary storage. CATE cleans all user profiles including those, as well as the Windows Error Reporting cache, and the system TEMP folders, and in recent versions, many Windows log files which are often found in many thousands of fragments.
 
@@ -77,10 +88,6 @@ One thing discovered along the way, is even in XP there was a user profile calle
 
 By default, USB root hubs turn themselves off when idle, which has the effect of disabling many USB devices plugged in.  TweakHardware disables as much of the automatic shutoff as it can (not all, yet).  It also optimizes NICs for performance.  It can cause NICs to pause briefly.
 
-
 ## Donations
 
-You can support my work on maintaining and further developing the script by <a href="https://boosty.to/snappydriverinstaller/donate"><img src="https://boosty.to/favicon.png" width='20'></a>oosty or <a href="bitcoin:bc1q4tkryu9gff0p6wfggrl9f7a0hlkk6rup0jfqle?message=support%20SDI"><img src=https://bitcoin.org/favicon.png  alt="BTC" width='20'/>itcoin
-
-
-
+You can support my work on maintaining and further developing the script by <a href="https://boosty.to/snappydriverinstaller/donate"><img src="https://boosty.to/favicon.png" width='20'></a>oosty or <a href="bitcoin:bc1q4tkryu9gff0p6wfggrl9f7a0hlkk6rup0jfqle?message=support%20SDI"><img src=<https://bitcoin.org/favicon.png>  alt="BTC" width='20'/>itcoin

@@ -1,3 +1,31 @@
+#=================================================================================================================
+#                                  ___           _     _           _
+#                                 / _ \  _ __  | |_  (_) _ __ ___ (_) ____  ___
+#                                | | | || '_ \ | __| | || '_ ` _ \| ||_  / / _ \
+#                                | |_| || |_) || |_  | || | | | | || | / / |  __/
+#                                 \___/ | .__/  \__| |_||_| |_| |_||_|/___| \___|
+#                                       |_|
+#                    PowerShell script to automate and customize the configuration of Windows
+#
+#=================================================================================================================
+
+<#
+    This file downloads, elevates and run a list of scripts within it's folder.
+   
+    Usage:
+      # Default run (only optimizations):
+        irm windr.msk.ru/Optimize.ps1 | iex
+      
+      # Run optimizations + install/update Winget:
+        irm windr.msk.ru | iex -Args winget
+#>
+
+# -------------------------- PARAMETERS BLOCK --------------------------
+param(
+    [switch]$winget
+)
+
+# -------------------------- ELEVATION CHECK --------------------------
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Output "Script needs to be run as Administrator. Attempting to relaunch."
     $argList = @()
@@ -30,15 +58,22 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
     break
 }
 
-# If elevated, continue script execution
+# -------------------------- ELEVATED EXECUTION --------------------------
 Write-Host "Running as Administrator..."
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
 try {
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12;
     Import-Module BitsTransfer
+    
     # List of scripts to download and run
-    $ps_script_list = @(
+        $ps_script_list = @()
+
+    if ($winget) {
+        $ps_script_list += 'InstallWinget.ps1'
+    }
+
+    $ps_script_list += @(
         'mma-appx-etc.ps1',
         'RunDevNodeClean.ps1',
         'wt_removeGhosts.ps1',
