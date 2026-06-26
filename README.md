@@ -4,9 +4,7 @@ This is a toolset to improve the performance of Windows desktop and server opera
 
 ## To launch the script download and run
 
-[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [RunDevNodeClean](#rundevnodeclean), then [wt_removeGhosts](#wt_removeghosts-remove-ghost-devices-from-windows), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
-
-* If you launch the script with the `-winget` parameter, [InstallWinget](#install-winget) will run **first** before all optimizations.
+[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [RunDevNodeClean](#rundevnodeclean), then [wt_removeGhosts](#wt_removeghosts-remove-ghost-devices-from-windows), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [Installs/updates winget](#install-winget), and then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
 
 No need to run as admin, the script will relaunch itself with admin privilleges.
 
@@ -16,15 +14,10 @@ No need to run as admin, the script will relaunch itself with admin privilleges.
 irm windr.msk.ru | iex
 ```
 
-If you want to install the Windows Package Manager (Winget, works on LTSC/Server systems without Microsoft Store), run:
-
 ## GETREDISTS.CMD:  Get and update Microsoft VC++ redistributables using GetRedists.ps1
 
 Lots of software uses Microsoft VC++ redistributables.  They get updated fairly often and almost never automatically.  To bring all of yours up to date and install all the newers which Microsoft supports, run [GETREDISTS.CMD](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/RUN/GETREDISTS.CMD) to call GetRedists.ps1.  Requires PowerShell 5.1, and automatically pulls in the VcRedist module.
 
-## Install WinGet
-
-By default, Windows LTSC editions, Windows Server, and custom stripped Windows builds do not ship with Windows Package Manager (Winget) or the Microsoft Store required to install it via official channels. This script installs the latest build of Winget with all required dependencies, no Microsoft Store required, and works on all supported Windows versions starting with Windows 10 1607 / Server 2016. It does not run automatically as part of the default optimization set — it is only added to the run queue if you pass -winget parameter on launch.
 
 ## MMA-AppX-etc
 
@@ -83,6 +76,10 @@ By default, on Windows client OS systems, VSS is active on all VSS-aware volumes
 For quite a while I had been curious as to why a simple method to do this was not available. CCLEANER and others do not reach into every user profile, and on many machines this is crucial, e.g., terminal servers. [The most recent version](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/tools/CATE.ps1) is a PowerShell script, which adds removal of Ask Partner Network folders from user profiles, and a good bit more speed and clean running; future development will be in PowerShell.
 
 One thing discovered along the way, is even in XP there was a user profile called the “System Profile” — XP had it in C:\WINDOWS\System32\config\systemprofile — and some malware dumps junk into it, and sometimes many gigs of unwanted files can be found in its temporary storage. CATE cleans all user profiles including those, as well as the Windows Error Reporting cache, and the system TEMP folders, and in recent versions, many Windows log files which are often found in many thousands of fragments.
+
+## Install WinGet
+
+By default, Windows LTSC editions, Windows Server, and custom stripped Windows builds do not ship with Windows Package Manager (Winget) or the Microsoft Store required to install it via official channels. This script installs the latest build of Winget with all required dependencies, no Microsoft Store required, and works on all supported Windows versions starting with Windows 10 1607 / Server 2016. It does run automatically as part of the default optimization set — if newer winget version found in it's github repo it will be installed or updated.
 
 ## TweakHardware: turn off much USB power management, and optimize NICs for performance
 

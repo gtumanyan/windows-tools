@@ -1,5 +1,5 @@
 # Run in Elevated PowerShell
-$ErrorActionPreference = 'SilentlyContinue'
+$ErrorActionPreference = 'Continue'
 # $ProgressPreference    = 'SilentlyContinue'
 
 $Arch = 'x64'  # change to 'arm64' on ARM devices
@@ -9,7 +9,7 @@ $apiUrl = 'https://api.github.com/repos/microsoft/winget-cli/releases'
 $releases = Invoke-RestMethod -Uri $apiUrl -Headers @{ 'User-Agent' = 'PowerShell' }
 $latest = $releases[0]
 $remoteVersion = $latest.tag_name
-if ((Get-Command winget --version) -ge $remoteVersion) {    
+if ((winget --version) -ge $remoteVersion) {    
     Write-Host "Winget is already up-to-date. Nothing to install." -ForegroundColor Green
     return
 }
