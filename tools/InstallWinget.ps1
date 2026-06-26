@@ -1,5 +1,5 @@
 # Run in Elevated PowerShell
-$ErrorActionPreference = 'Continue'
+$ErrorActionPreference = 'SilentlyContinue'
 # $ProgressPreference    = 'SilentlyContinue'
 
 $Arch = 'x64'  # change to 'arm64' on ARM devices
@@ -24,7 +24,7 @@ $bundleAsset = $latest.assets | Where-Object { $_.name -eq $bundle }
 if (-not $bundleAsset) { throw 'Could not find msixbundle asset in latest release.' }
 
 # --- Skip download if the bundle hasn't changed and local files exist ---
-if ((Get-FileHash  $bundle).Hash.ToLower() -eq ($bundleAsset.digest -replace '^sha256:')) {
+if ((Test-Path $bundle) -and (Get-FileHash $bundle).Hash.ToLower() -eq ($bundleAsset.digest -replace '^sha256:')) {
     Write-Host 'Actual bundle files found — skipping download.' -ForegroundColor Green
 }
 else {
