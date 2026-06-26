@@ -8,13 +8,7 @@ $Arch = 'x64'  # change to 'arm64' on ARM devices
 $apiUrl = 'https://api.github.com/repos/microsoft/winget-cli/releases'
 $releases = Invoke-RestMethod -Uri $apiUrl -Headers @{ 'User-Agent' = 'PowerShell' }
 $latest = $releases[0]
-$remoteVersion = $latest.tag_name
-if ((Get-Command winget --version) -ge $remoteVersion) {    
-    Write-Host "Winget is already up-to-date. Nothing to install." -ForegroundColor Green
-    return
-}
-
-Write-Host "Winget is missing or outdated" -ForegroundColor Yellow
+Write-Host "Using release: $($latest.tag_name)" -ForegroundColor Cyan
 
 $depZip = 'DesktopAppInstaller_Dependencies.zip'
 $depAsset = $latest.assets | Where-Object { $_.name -eq $depZip }
@@ -24,8 +18,8 @@ $bundleAsset = $latest.assets | Where-Object { $_.name -eq $bundle }
 if (-not $bundleAsset) { throw 'Could not find msixbundle asset in latest release.' }
 
 # --- Skip download if the bundle hasn't changed and local files exist ---
-if ((Get-FileHash  $bundle).Hash.ToLower() -eq ($bundleAsset.digest -replace '^sha256:')) {
-    Write-Host 'Actual bundle files found — skipping download.' -ForegroundColor Green
+if ((Get-FileHash  $bundle).Hash.ToLower() -eq $bundleAsset.digest -replace '^sha256:') {
+    Write-Host 'Files already up-to-date — skipping download.' -ForegroundColor Green
 }
 else {
     Write-Host 'Downloading new release files...' -ForegroundColor Yellow
@@ -45,7 +39,8 @@ $deps = Get-ChildItem -Path . -Recurse -Filter "*.appx" |
 if (-not $deps) { throw "No ${Arch} .appx dependencies found in dependency ZIP." }
 
 # --- 3) Install App Installer (winget) with all deps at once ---
-Add-AppxPackage -Path $bundle -DependencyPath $deps
+Add-AppxPackage -Path $bundle -DependencyPath $deps `
+  -ForceUpdateFromAnyVersion -ForceApplicationShutdown
 
 # --- 4) Verify & fix PATH shim if needed ---
 # Winget usually shims to %LOCALAPPDATA%\Microsoft\WindowsApps
