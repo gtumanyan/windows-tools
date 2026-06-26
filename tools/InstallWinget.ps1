@@ -30,7 +30,7 @@ if ((Test-Path $bundle) -and (Get-FileHash $bundle).Hash.ToLower() -eq ($bundleA
 else {
     Write-Host 'Downloading new release files...' -ForegroundColor Yellow
     # --- Skip download of the DesktopAppInstaller_Dependencies.zip if hash hasn't changed and local files exist ---
-    if ((Get-FileHash $depZip).Hash.ToLower() -ne ($depAsset.digest -replace '^sha256:')) {
+    if ((Test-Path $depZip) -and (Get-FileHash $depZip).Hash.ToLower() -ne ($depAsset.digest -replace '^sha256:')) {
         Invoke-WebRequest -Uri $depAsset.browser_download_url  -OutFile $depZip 
         Expand-Archive -Path $depZip -DestinationPath . -Force
     }
