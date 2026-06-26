@@ -12,18 +12,8 @@
 <#
     This file downloads, elevates and run a list of scripts within it's folder.
    
-    Usage:
-      # Default run (only optimizations):
-        irm windr.msk.ru/Optimize.ps1 | iex
-      
-      # Run optimizations + install/update Winget:
-        irm windr.msk.ru | iex -Args winget
+    Usage: irm windr.msk.ru/Optimize.ps1 | iex
 #>
-
-# -------------------------- PARAMETERS BLOCK --------------------------
-param(
-    [switch]$winget
-)
 
 # -------------------------- ELEVATION CHECK --------------------------
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -66,13 +56,6 @@ try {
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12;
     Import-Module BitsTransfer
     
-    # List of scripts to download and run
-        $ps_script_list = @()
-
-    if ($winget) {
-        $ps_script_list += 'InstallWinget.ps1'
-    }
-
     $ps_script_list += @(
         'mma-appx-etc.ps1',
         'RunDevNodeClean.ps1',
@@ -83,7 +66,7 @@ try {
         'CATE.ps1',
         'TweakHardware.ps1',
         'TweakMemTCP.ps1',
-        'Winget_LTSC_Installer.ps1',
+        'InstallWinget.ps1',
         'TweakDrives.ps1'
     )
 
