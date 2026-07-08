@@ -79,7 +79,9 @@ One thing discovered along the way, is even in XP there was a user profile calle
 
 ## Install WinGet
 
-By default, Windows LTSC editions, Windows Server, and custom stripped Windows builds do not ship with Windows Package Manager (Winget) or the Microsoft Store required to install it via official channels. This script installs the latest build of Winget with all required dependencies, no Microsoft Store required, and works on all supported Windows versions starting with Windows 10 1607 / Server 2016. It does run automatically as part of the default optimization set — if newer winget version found in it's github repo it will be installed or updated.
+By default, Windows LTSC editions, Windows Server, and custom stripped Windows builds do not ship with Windows Package Manager (Winget) or the Microsoft Store required to install it via official channels. [This script](https://github.com/gtumanyan/windows-tools/raw/master/tools/InstallWinget.ps1)  installs the latest build of Winget with all required dependencies, no Microsoft Store required, and works on all supported Windows versions starting with Windows 10 1607 / Server 2016.
+
+It runs automatically as part of the default optimization set. If a newer WinGet version is found in the official GitHub repository, it will automatically update it.
 
 ## TweakHardware: turn off much USB power management, and optimize NICs for performance
 
