@@ -113,9 +113,9 @@ $ErrorActionPreference = $OriginalErrorActionPreference
 # --- Install winget
 Write-Output "Installing winget $remoteVersion..."
 # Assume dependencies are already installed
-Try {Add-AppxPackage $bundlePath -ForceUpdateFromAnyVersion -ForceApplicationShutdown}
+Try {Add-AppxPackage $bundlePath -ForceUpdateFromAnyVersion -ForceApplicationShutdown -Verbose}
 # Install with dependencies (slower)
-Catch {Add-AppxPackage $bundlePath -DependencyPath $deps}
+Catch {Add-AppxPackage $bundlePath -DependencyPath $deps -Verbose}
 
 # --- Verify & fix PATH shim if needed ---
 # Winget usually shims to %LOCALAPPDATA%\Microsoft\WindowsApps
