@@ -60,14 +60,14 @@ try {
         'mma-appx-etc.ps1',
         'RunDevNodeClean.ps1',
         'wt_removeGhosts.ps1',
-        'TweakSMB.ps1',
         'OWTAS.ps1',
         'OVSS.ps1',
         'CATE.ps1',
         'TweakHardware.ps1',
         'TweakMemTCP.ps1',
-        'TweakDrives.ps1',
-        'InstallWinget.ps1'
+        'TweakSMB.ps1',
+        'InstallWinget.ps1',
+        'TweakDrives.ps1'
     )
 
     # Download and run each script

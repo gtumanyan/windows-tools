@@ -14,19 +14,10 @@ No need to run as admin, the script will relaunch itself with admin privilleges.
 irm windr.msk.ru | iex
 ```
 
-## GETREDISTS.CMD:  Get and update Microsoft VC++ redistributables using GetRedists.ps1
-
-Lots of software uses Microsoft VC++ redistributables.  They get updated fairly often and almost never automatically.  To bring all of yours up to date and install all the newers which Microsoft supports, run [GETREDISTS.CMD](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/RUN/GETREDISTS.CMD) to call GetRedists.ps1.  Requires PowerShell 5.1, and automatically pulls in the VcRedist module.
-
-
 ## MMA-AppX-etc
 
 There is something called MMAgent, lots of little applets called APPX's, the Edge browser, and something called Game Mode.  Application launch prefetching, page combining, memory compression, and application prelaunching have all been rolled into MMAgent and properly configured, this can improve overall OS performance quite nicely: disabling Superfetch can sometimes give a bit of performance, but configuring it nicely often gains a lot, especially with an SSD.  Many APPX items eat resources and confuse end-users; deleting these (e.g., the consumer-grade email app) can prevent many issues.  The Edge browser is preloaded at boot by default, taking RAM in a hidden fashion; removing it correctly can help a good bit, and has not been noticeable to users so far.  And Game Mode is something hidden which, by default, runs all the time, sits in the background, tries to guess when any user is playing a game whose video is worth recording for sharing with other gamers, and does the recording whether its guess is correct or not...all of which takes resources, and is therefore well worth turning off! Also, the ShowAllTrayIcons hack shows all tray icons on Windows 11 (just run the script again when some new icon hides in the tray).
 The above are all implemented in [mma-appx-etc](tools/mma-appx-etc.ps1) for your operating pleasure.
-
-## TweakMemTCP
-
-[StorageCraft has published](https://support.storagecraft.com/s/article/Tuning-Guide-for-StorageCraft-Software-on-Servers?language=en_US) some rather marvelous OS tweaks for overall performance, memory management, and TCP networking.  These and others are implemented in [TweakMemTCP](https://github.com/gtumanyan/windows-tools/raw/master/tools/TweakMemTCP.ps1).  They have been working very well.
 
 ## RunDevNodeClean
 
@@ -35,10 +26,6 @@ DevNodeClean is a Microsoft-provided utility that clears certain registry items,
 ## wt_removeGhosts: remove ghost devices from Windows
 
 Over time, Windows accumulates 'ghost devices', devices that can show up in Device Manager as transparent because they aren't actually there, but things are set up if they are plugged in again.  This applies to anything and everything, including motherboard device objects replaced during driver updates, VSS items, USB sticks inserted and removed, really anything at all.  This contributes greatly to a slowdown of an old OS install image.  And removeGhosts removes them all.  This is not Ponderworthy code, but it's great stuff.  We run our own fork of it just in case.
-
-## TweakDrives: Tweak NTFS for Performance and Reliability
-
-In [TweakDrives](tools/TweakDrives.ps1), SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.
 
 ## TweakSMB: Tweak SMB file sharing for performance and reliability
 
@@ -61,12 +48,6 @@ OWTAS is available as [VBS](https://github.com/gtumanyan/windows-tools/raw/maste
 
 The tool is designed for Windows 10/2019 down through XP/2003. It is self-elevating if run non-administratively.
 
-## TOSC: Turn Off Share Caching
-
-This tool is no longer run automatically by any of the OPTIMIZE items.  Newer Microsoft operating systems handle share caching much better.  But it is still available in the Tools area.
-
-By default, in Windows since XP/2003, if a folder is shared to the network via SMB, so-called "caching" is turned on.  This actually means that the Offline Files service on *other* machines accessing the share, are allowed to retrieve and store copies of files and folders on the machine acting as server.  Turning this off for all shares gives a speed bump for the server machine, and also improves reliability overall, dependence on Offline Files can lead to all sorts of issues including data loss when the server is not available or suddenly becomes available et cetera.  [TOSC](https://github.com/gtumanyan/windows-tools/raw/master/tools/TOSC.ps1) does this very well, for all file shares extant on the machine on which it is run.
-
 ## OVSS: Optimize VSS
 
 By default, on Windows client OS systems, VSS is active on all VSS-aware volumes, but it is not optimized, which in this case means, there is an "association" or preallocation, of zero space.  On Windows server OS systems, VSS is likewise active, but there is no association/preallocation, at all, on any VSS-aware volumes.  Many different Windows tools' documentation includes recommendations concerning this, some stating that every volume to be backed up should have 20% of its space "associated" or preallocated for VSS, others recommending UNBOUNDED.    [OVSS](https://github.com/gtumanyan/windows-tools/raw/master/tools/OVSS.ps1) does this, and also, makes a simple attempt to reduce orphan shadows.  Orphan shadows are VSS snapshots existing uselessly because of old aborted backups, slowing down drive access, and building up space in System Volume Information.  OVSS does not try to address SVI buildup thoroughly, for this [please see this page.](https://notes.ponderworthy.com/thorough-cleanup-of-vss)
@@ -77,15 +58,37 @@ For quite a while I had been curious as to why a simple method to do this was no
 
 One thing discovered along the way, is even in XP there was a user profile called the “System Profile” — XP had it in C:\WINDOWS\System32\config\systemprofile — and some malware dumps junk into it, and sometimes many gigs of unwanted files can be found in its temporary storage. CATE cleans all user profiles including those, as well as the Windows Error Reporting cache, and the system TEMP folders, and in recent versions, many Windows log files which are often found in many thousands of fragments.
 
+## TweakHardware: turn off much USB power management, and optimize NICs for performance
+
+By default, USB root hubs turn themselves off when idle, which has the effect of disabling many USB devices plugged in.  TweakHardware disables as much of the automatic shutoff as it can (not all, yet).  It also optimizes NICs for performance.  It can cause NICs to pause briefly.
+
+## TweakMemTCP
+
+[StorageCraft has published](https://support.storagecraft.com/s/article/Tuning-Guide-for-StorageCraft-Software-on-Servers?language=en_US) some rather marvelous OS tweaks for overall performance, memory management, and TCP networking.  These and others are implemented in [TweakMemTCP](https://github.com/gtumanyan/windows-tools/raw/master/tools/TweakMemTCP.ps1).  They have been working very well.
+
 ## Install WinGet
 
 By default, Windows LTSC editions, Windows Server, and custom stripped Windows builds do not ship with Windows Package Manager (Winget) or the Microsoft Store required to install it via official channels. [This script](https://github.com/gtumanyan/windows-tools/raw/master/tools/InstallWinget.ps1)  installs the latest build of Winget with all required dependencies, no Microsoft Store required, and works on all supported Windows versions starting with Windows 10 1607 / Server 2016.
 
 It runs automatically as part of the default optimization set. If a newer WinGet version is found in the official GitHub repository, it will automatically update it.
 
-## TweakHardware: turn off much USB power management, and optimize NICs for performance
+## TweakDrives: Tweak NTFS for Performance and Reliability
 
-By default, USB root hubs turn themselves off when idle, which has the effect of disabling many USB devices plugged in.  TweakHardware disables as much of the automatic shutoff as it can (not all, yet).  It also optimizes NICs for performance.  It can cause NICs to pause briefly.
+In [TweakDrives](tools/TweakDrives.ps1), SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.
+
+## TOSC: Turn Off Share Caching
+
+This tool is no longer run automatically by any of the OPTIMIZE items.  Newer Microsoft operating systems handle share caching much better.  But it is still available in the Tools area.
+
+By default, in Windows since XP/2003, if a folder is shared to the network via SMB, so-called "caching" is turned on.  This actually means that the Offline Files service on *other* machines accessing the share, are allowed to retrieve and store copies of files and folders on the machine acting as server.  Turning this off for all shares gives a speed bump for the server machine, and also improves reliability overall, dependence on Offline Files can lead to all sorts of issues including data loss when the server is not available or suddenly becomes available et cetera.  [TOSC](https://github.com/gtumanyan/windows-tools/raw/master/tools/TOSC.ps1) does this very well, for all file shares extant on the machine on which it is run.
+
+### ⚠️ DEPRECATED: GETREDISTS.CMD (Legacy)
+
+> **Status:** Obsolete for Windows 10 1809+, Windows Server 2019+, and all LTSC editions.
+> 
+> This script has been superseded by **[`InstallWinget.ps1`](tools/Optimize.ps1)** + native WinGet commands. Use winget install Microsoft.VCRedist instead
+
+Lots of software uses Microsoft VC++ redistributables.  They get updated fairly often and almost never automatically.  To bring all of yours up to date and install all the newers which Microsoft supports, run [GETREDISTS.CMD](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/RUN/GETREDISTS.CMD) to call GetRedists.ps1.  Requires PowerShell 5.1, and automatically pulls in the VcRedist module.
 
 ## Donations
 
