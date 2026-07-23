@@ -121,6 +121,7 @@ Catch {Add-AppxPackage $bundlePath -DependencyPath $deps -Verbose}
 # Winget usually shims to %LOCALAPPDATA%\Microsoft\WindowsApps
 $wingetPath = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\winget.exe'
 if (Test-Path $wingetPath) {
+    Write-Host "`nDone! Running 'winget update' to check for available updates." -ForegroundColor Green
     & $wingetPath update
     Write-Host "`nUpdate all?" -ForegroundColor Cyan
     $response = Read-Host "Press [Enter] to update, type anything else to exit"
