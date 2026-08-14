@@ -97,13 +97,13 @@ if (Test-Path $WingetPkg) {
         $bundlePath = $WingetPkg
     }
     else {
-        Write-Host 'Local bundle is outdated — downloading from $WingetUrl...' -ForegroundColor Yellow
+        Write-Host "Local bundle is outdated — downloading from $WingetUrl..." -ForegroundColor Yellow
         Invoke-WebRequest -Uri $WingetUrl -OutFile $WingetPkg
         $bundlePath = $WingetPkg
     }
 }
 else {
-    Write-Host 'No local bundle — will install directly from $WingetUrl.' -ForegroundColor Cyan
+    Write-Host "No local bundle — will install directly from $WingetUrl" -ForegroundColor Cyan
     $bundlePath = $WingetUrl
 }
 
