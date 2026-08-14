@@ -38,22 +38,19 @@ else {
     # Check also path set by TCPU in case script ran in total commander PowerUser evironment
     if (Test-Path $env:P\Web-Install\Winget\$DepsZip) {
         if ((Get-FileHash $DepsZip).Hash.ToLower() -eq ($depAsset.digest -replace '^sha256:')) {
-            Write-Verbose '$DepsZip is current — skipping download.'
+            Write-Verbose "$DepsZip is current — skipping download."
         }
         else {
-            Write-Host 'Downloading dependencies from $DepsUrl...' -ForegroundColor Yellow
-            Invoke-WebRequest -Uri $DepsUrl -OutFile $DepsZip
-
-            
+            Write-Host "Downloading dependencies from $DepsUrl..." -ForegroundColor Yellow
+            Invoke-WebRequest -Uri $DepsUrl -OutFile $DepsZip       
             Expand-Archive $DepsZip
         }
-    } 
+    }
     else {
         Write-Output "Downloading winget dependencies..."
         Write-Debug "Downloading winget dependencies from $DepsUrl to $deps`n`n"
         $DepsZip = Join-Path $env:TEMP 'DesktopAppInstaller_Dependencies.zip'
         Invoke-WebRequest -Uri $DepsUrl -OutFile $DepsZip
-        
         Expand-Archive -Path $DepsZip -DestinationPath $deps -Force
     }
 
@@ -70,12 +67,8 @@ else {
     $arch = ($osDetails.OSArchitecture -replace "[^\d]").Trim()
     
     # If 32-bit or 64-bit replace with x32 and x64
-    if ($arch -eq "32") {
-        $arch = "x86"
-    }
-    elseif ($arch -eq "64") {
-        $arch = "x64"
-    }
+    if ($arch -eq "32") {$arch = "x86"}
+    elseif ($arch -eq "64") {$arch = "x64"}
 
     $deps = Get-ChildItem -Path $arch -Recurse -Filter "*.appx" |
     Select-Object -ExpandProperty FullName    
