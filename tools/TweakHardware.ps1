@@ -56,18 +56,14 @@ Param()
 #
 
 ""
-""
 "***********************************************************************"
 " TweakHardware: Tweak NICs for performance and printer spooler cleanup "
 "***********************************************************************"
-""
 ""
 
 # Self-elevate if not already elevated.
 if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
     {
-    "Running elevated; good."
-    ""
     } else {
     write-host " Requesting ADMIN rights.. " -fore 0 -back 0xE ; sleep 2
     Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file $PSCommandPath"
