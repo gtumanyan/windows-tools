@@ -140,5 +140,5 @@ else {
         if (Test-Path $exe) { & $exe --version }
     }
     ""
-    Write-Host "If 'winget' is still not recognized, open a NEW PowerShell window or sign out/in." -ForegroundColor Yellow
+    Write-Host "If winget is still not recognized, open a NEW PowerShell window or sign out/in." -ForegroundColor Yellow
 }
