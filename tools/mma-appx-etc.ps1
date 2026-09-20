@@ -67,7 +67,7 @@ Param()
 # and is reprised at the end of this file
 #
 
-
+""
 "*********************************************************************"
 "   MMA, appx, and other 8+/2012+/10/201*/11/202* performance items   "
 "*********************************************************************"
@@ -110,7 +110,7 @@ If (-Not $MMAgentSetup.OperationAPI) {
  Catch {
 		# Specifically catch the "Error 50" or "Not Supported" scenario
 		If ($_.Exception.Message -match "not supported" -or $_.FullyQualifiedErrorId -match "50") {
-			Write-Verbose "[LOCKED] OperationAPI is hard-locked by the OS (likely NVMe SSD or missing SysMain service). This is expected on fast storage." -ForegroundColor Yellow
+			Write-Verbose "[LOCKED] OperationAPI is hard-locked by the OS (likely NVMe SSD or missing SysMain service). This is expected on fast storage."
 		}
 		Else {
 			Write-Warning "  [FAIL] Could not enable OperationAPI: $($_.Exception.Message)"
