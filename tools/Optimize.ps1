@@ -73,7 +73,7 @@ try {
     # Download and run each script
     foreach ($ps_script in $ps_script_list) {
         $download_url = "https://github.com/gtumanyan/windows-tools/raw/master/tools/$ps_script"
-
+        Write-Host ""
         Write-Host "--- Downloading $ps_script... ---"
         Invoke-WebRequest -Uri $download_url -OutFile ".\$ps_script"
         
