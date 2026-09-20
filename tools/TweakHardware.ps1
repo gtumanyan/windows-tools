@@ -75,13 +75,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     ""
     }
 
-
-""
-
-"Disabling Fast Startup..."
-powercfg /hibernate off
-""
-
 # Get-NetAdapterAdvancedProperty gets a full list, for all NICs on a given machine.
 # The below combines settings across multiple NIC types, most settings will not apply
 # to all NICs.
