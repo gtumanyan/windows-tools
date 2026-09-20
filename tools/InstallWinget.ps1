@@ -136,7 +136,7 @@ else {
     $found = Get-ChildItem "$env:ProgramFiles\WindowsApps" -Filter "Microsoft.DesktopAppInstaller_*_$arch__8wekyb3d8bbwe" -Directory -ErrorAction SilentlyContinue |
     Sort-Object Name -Descending | Select-Object -First 1
     if ($found) {
-        $exe = Join-Path $found.FullName 'winget.exe'
+        $exe = Join-Path $found.FullName winget.exe
         if (Test-Path $exe) { & $exe --version }
     }
     ""
