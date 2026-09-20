@@ -81,11 +81,9 @@ Param()
 #
 
 ""
-""
 "*********************"
 "   RunDevNodeClean   "
 "*********************"
-""
 ""
 
 $StartupDir = $pwd
@@ -136,7 +134,6 @@ if ([System.IntPtr]::Size -eq 4) {
 	} else {
 	# 64-bit OS
 	"Running 64-bit binary..."
-	""
 	& $TempPath\x64\DevNodeClean.exe
 	& $TempPath\x64\DevNodeClean.exe
 	}
