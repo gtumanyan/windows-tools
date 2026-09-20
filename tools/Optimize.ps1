@@ -79,14 +79,13 @@ try {
         
         $run_script = ".\$ps_script"
 
-        Write-Host "Running $ps_script..."
         & $run_script
         Remove-Item ".\$ps_script"
     }
 
-    Write-Host "Script completed successfully."
+    Write-Debug "Script completed successfully."
 } catch {
-    Write-Host "An error occurred: $_" -Foregroundcolor Red
+    Write-Error "An error occurred: $_"
 }
 
 Write-Host "Press Enter to exit..."
