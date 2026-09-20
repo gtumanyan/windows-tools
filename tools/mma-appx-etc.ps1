@@ -66,14 +66,18 @@ Param()
 # https://opensource.org/licenses/BSD-3-Clause
 # and is reprised at the end of this file
 #
-""
-"Disabling Fast Startup..."
-powercfg /hibernate off
-""
+
+
 "*********************************************************************"
 "   MMA, appx, and other 8+/2012+/10/201*/11/202* performance items   "
 "*********************************************************************"
 ""
+
+# Never require a sign-in on wake (ConsoleLock: 0 = never, 1 = when the PC wakes from sleep).
+"Stopping the machine from demanding a password on wake..."
+powercfg /setacvalueindex SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
+powercfg /setdcvalueindex SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
+powercfg /setactive SCHEME_CURRENT
 
 $WinVersionStr = Get-CimInstance -Class Win32_OperatingSystem | ForEach-Object -MemberName Caption
 
@@ -106,7 +110,7 @@ If (-Not $MMAgentSetup.OperationAPI) {
  Catch {
 		# Specifically catch the "Error 50" or "Not Supported" scenario
 		If ($_.Exception.Message -match "not supported" -or $_.FullyQualifiedErrorId -match "50") {
-			Write-Host "  [LOCKED] OperationAPI is hard-locked by the OS (likely NVMe SSD or missing SysMain service). This is expected on fast storage." -ForegroundColor Yellow
+			Write-Verbose "[LOCKED] OperationAPI is hard-locked by the OS (likely NVMe SSD or missing SysMain service). This is expected on fast storage." -ForegroundColor Yellow
 		}
 		Else {
 			Write-Warning "  [FAIL] Could not enable OperationAPI: $($_.Exception.Message)"
@@ -115,8 +119,6 @@ If (-Not $MMAgentSetup.OperationAPI) {
 }
 If (-Not $MMAgentSetup.PageCombining)
 { Enable-MMAgent -PageCombining }
-
-""
 
 # Will add deprovisioning:  Remove-AppxProvisionedPackage -Online -PackageName MyAppxPkg
 
@@ -200,7 +202,7 @@ $PreinstalledAppsToRemove | Remove-Package
 
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
-""
+
 # AMD External Events Utility (probably want this one)
 "Stopping AMD External Events Utility..."
 if (Get-Service -Name "AMD External Events Utility") {
