@@ -137,11 +137,14 @@ if ($VersionInstalled -eq $VersionAvailable) {
     return
 }
 
-if ($VersionInstalled -gt $VersionAvailable) {
-    Write-Host ''
-    Write-Warning "Installed $VersionInstalled is newer than the newest GitHub Release $VersionAvailable"
-    Write-Host ''
-    return
+# Install newer stable even if major version is older
+if (($VersionInstalled -match '-') -eq ($VersionAvailable -match '-')) {
+    if ($VersionInstalled -gt $VersionAvailable) {
+        Write-Host ''
+        Write-Warning "Installed $VersionInstalled is newer than the newest GitHub Release $VersionAvailable"
+        Write-Host ''
+        return
+    }
 }
 
 # ------------------------------------------------------------------------ #
