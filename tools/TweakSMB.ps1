@@ -31,54 +31,6 @@ Optimizes SMB, client and server, for performance
 
 #> 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <#
 
 .DESCRIPTION 
@@ -126,27 +78,36 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 
 ""
 "Client..."
-Set-SmbClientConfiguration -EnableBandwidthThrottling $false -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -EnableLargeMtu $true -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -EnableLoadBalanceScaleOut $true -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -EnableMultiChannel $true -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -EnableSecuritySignature $false -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -MaxCmds 16384 -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -MaximumConnectionCountPerServer 32 -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -OplocksDisabled $false -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -RequireSecuritySignature $false -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -UseOpportunisticLocking $true -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbClientConfiguration -WindowSizeThreshold 2 -force -ErrorAction SilentlyContinue | Out-Null
+Set-SmbClientConfiguration -EnableBandwidthThrottling $false -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -EnableLargeMtu $true -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -EnableLoadBalanceScaleOut $true -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -EnableMultiChannel $true -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -EnableSecuritySignature $false -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -MaxCmds 16384 -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -MaximumConnectionCountPerServer 32 -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -OplocksDisabled $false -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -RequireSecuritySignature $false -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -UseOpportunisticLocking $true -force -ErrorAction SilentlyContinue
+Set-SmbClientConfiguration -WindowSizeThreshold 2 -force -ErrorAction SilentlyContinue
 ""
 "Server..."
-Set-SmbServerConfiguration -EnableMultiChannel $true -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbServerConfiguration -EnableOplocks $true -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbServerConfiguration -ServerHidden $true -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbServerConfiguration -IrpStackSize 20 -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbServerConfiguration -MaxMpxCount 4096 -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbServerConfiguration -MaxWorkItems 16384 -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbServerConfiguration -MaxSessionPerConnection 16384 -force -ErrorAction SilentlyContinue | Out-Null
-Set-SmbServerConfiguration -TreatHostAsStableStorage $true -force -ErrorAction SilentlyContinue | Out-Null
+# Windows 11 blocks guest logons by default,
+# and from build 24H2 it also *requires SMB signing* -- which a guest session cannot do, so
+# the first switch alone is not enough there. Set-SmbClientConfiguration is the supported
+# cmdlet and takes effect live. Never force-restart
+# the workstation service on a machine you still need to reach.
+# A network drive belongs to a logon session, so Z: exists only for the logged-in user; the
+# UNC path is what a non-interactive run must use.
+Set-SmbClientConfiguration -EnableInsecureGuestLogons $true -RequireSecuritySignature $false -Force
+
+Set-SmbServerConfiguration -EnableMultiChannel $true -force -ErrorAction SilentlyContinue
+Set-SmbServerConfiguration -EnableOplocks $true -force -ErrorAction SilentlyContinue
+Set-SmbServerConfiguration -ServerHidden $true -force -ErrorAction SilentlyContinue
+Set-SmbServerConfiguration -IrpStackSize 20 -force -ErrorAction SilentlyContinue
+Set-SmbServerConfiguration -MaxMpxCount 4096 -force -ErrorAction SilentlyContinue
+Set-SmbServerConfiguration -MaxWorkItems 16384 -force -ErrorAction SilentlyContinue
+Set-SmbServerConfiguration -MaxSessionPerConnection 16384 -force -ErrorAction SilentlyContinue
+Set-SmbServerConfiguration -TreatHostAsStableStorage $true -force -ErrorAction SilentlyContinue
 ""
 "Done!"
 ""
