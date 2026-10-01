@@ -167,6 +167,7 @@ catch {
     # ------------------------------------------------------------------------ #
     # Dependencies (only when winget is absent)
     # ------------------------------------------------------------------------ #
+    Write-Output "Installing with dependencies (slower)..."
 
     $DepsZip = 'DesktopAppInstaller_Dependencies.zip'
     $depAsset = $latest.assets | Where-Object { $_.name -eq $DepsZip }
@@ -177,12 +178,12 @@ catch {
     # Check also path set by TCPU in case script ran in total commander PowerUser evironment
     $cacheDir = if ($env:P -and (Test-Path "$env:P\Web-Install\Winget")) { "$env:P\Web-Install\Winget" } else { $env:TEMP }
     $DepsZip = Join-Path $cacheDir $DepsZip
-    if ((Get-FileHash $DepsZip).Hash.ToLower() -eq ($depAsset.digest -replace '^sha256:')) {
+    if ((Test-Path $DepsZip) -and (Get-FileHash $DepsZip).Hash.ToLower() -eq ($depAsset.digest -replace '^sha256:')) {
         Write-Verbose "$DepsZip is current — skipping download."
     }
     else {
-        Write-Verbose "Downloading winget dependencies from $winget_dependencies_url to $cacheDir`n`n"
-        Invoke-WebRequest -Uri $winget_dependencies_url -OutFile $DepsZip       
+        Write-Host "Downloading winget dependencies from $winget_dependencies_url to $cacheDir`n`n"
+        Invoke-WebRequest -Uri $winget_dependencies_url -OutFile $DepsZip -Verbose
         Expand-Archive $DepsZip -DestinationPath $cacheDir -Force
     }
 
@@ -202,10 +203,10 @@ catch {
     if ($arch -eq "32") { $arch = "x86" }
     elseif ($arch -eq "64") { $arch = "x64" }
 
-    $deps = Get-ChildItem -Path $arch -Recurse -Filter "*.appx" | Select-Object -ExpandProperty FullName    
+    $deps = Get-ChildItem -Path $cacheDir\$arch -Recurse -Filter "*.appx" | Select-Object -ExpandProperty FullName    
 
     # Now install winget with dependencies
-    Write-Verbose "Direct install failed, retrying with dependencies..."
+    Write-Verbose "Retrying with dependencies..."
     Add-AppxPackage $bundlePath -DependencyPath $deps -ForceUpdateFromAnyVersion -Verbose
 }
 
