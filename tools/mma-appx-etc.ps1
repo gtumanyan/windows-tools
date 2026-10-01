@@ -286,9 +286,9 @@ $packageNames = @(
 foreach ($pkg in $packageNames) {
 	$userSettingsPath = "$env:LOCALAPPDATA\Packages\$pkg\LocalState\settings.json"
 	if (Test-Path $userSettingsPath) {
-		$json = Get-Content $userSettingsPath -Raw | ConvertFrom-Json
-		$json.copyOnSelect = $true
-		$json | ConvertTo-Json -Depth 20 | Set-Content $userSettingsPath -Encoding UTF8 -Force
+		$content = Get-Content $userSettingsPath -Raw
+        $content = $content -replace '("(copyOnSelect|copyFormatting)"\s*:\s*)(false|true|"[^"]*"|\[.*?\])', '$1true'
+        $content | Set-Content $userSettingsPath -Force
 	}
 }
 
