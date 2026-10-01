@@ -57,6 +57,7 @@ try {
     Import-Module BitsTransfer
     
     $ps_script_list = @(
+        'mma-appx-etc.ps1',
         'RunDevNodeClean.ps1',
         'wt_removeGhosts.ps1',
         'OWTAS.ps1',
@@ -66,7 +67,6 @@ try {
         'TweakMemTCP.ps1',
         'TweakSMB.ps1',
         'InstallWinget.ps1',
-        'mma-appx-etc.ps1',
         'TweakDrives.ps1'
     )
 
