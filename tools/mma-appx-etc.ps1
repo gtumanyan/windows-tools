@@ -200,6 +200,35 @@ $PreinstalledAppsToRemove = @(
 )
 $PreinstalledAppsToRemove | Remove-Package
 
+# Synchronize system time to fix SSL/TLS errors caused by incorrect date and time
+$TimeServer = switch ('Cloudflare') {
+	'OpenWRT' { '0.openwrt.pool.ntp.org 1.openwrt.pool.ntp.org 2.openwrt.pool.ntp.org 3.openwrt.pool.ntp.org' }
+	'Cloudflare' { 'time.cloudflare.com' }
+	'Windows' { 'time.windows.com' }
+	'NistGov' { 'time.nist.gov' }
+	'PoolNtpOrg' { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' }
+}
+"Setting 'Internet Time Server' to '$TimeServer' ..."
+Set-Service -Name 'W32Time' -StartupType Manual -ErrorAction SilentlyContinue
+Start-Service -Name 'W32Time' -ErrorAction SilentlyContinue
+$MaxRetries = 20
+$RetryCount = 0
+while ((Get-Service -Name 'W32Time').Status -ne 'Running' -and $RetryCount -lt $MaxRetries) {
+	Start-Sleep -Seconds 0.1
+	$RetryCount++
+}
+if ($RetryCount -eq $MaxRetries) {
+	Write-Error -Message "    Cannot start W32Time service. Settings not applied."
+}
+# Apply NTP server and synchronize system clock
+else {
+	w32tm.exe /config /syncfromflags:manual /manualpeerlist:"$TimeServer" /update
+	w32tm.exe /resync
+	if ($LASTEXITCODE -ne 0) {
+		Write-Warning "w32tm /resync returned exit code $LASTEXITCODE. System time may not have been synchronized."
+	}
+}
+
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
 
@@ -232,28 +261,6 @@ else {
 	Foreach ($Item in Get-ChildItem $RegPathControlPanelNotify) { Set-ItemProperty -Path $Item.PSPath -Name "IsPromoted" -Value "1" -Type DWord }
 }
 
-# control panel (icons view) > date and time (timedate.cpl) > internet time
-$TimeServer = switch ('Cloudflare') {
-	'OpenWRT' { '0.openwrt.pool.ntp.org 1.openwrt.pool.ntp.org 2.openwrt.pool.ntp.org 3.openwrt.pool.ntp.org' }
-	'Cloudflare' { 'time.cloudflare.com' }
-	'Windows' { 'time.windows.com' }
-	'NistGov' { 'time.nist.gov' }
-	'PoolNtpOrg' { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' }
-}
-"Setting 'Internet Time Server' to '$TimeServer' ..."
-Start-Service -Name 'W32Time'
-$MaxRetries = 20
-$RetryCount = 0
-while ((Get-Service -Name 'W32Time').Status -ne 'Running' -and $RetryCount -lt $MaxRetries) {
-	Start-Sleep -Seconds 0.1
-	$RetryCount++
-}
-if ($RetryCount -eq $MaxRetries) {
-	Write-Error -Message "    Cannot start W32Time service. Settings not applied."
-}
-else {
-	w32tm.exe /config /syncfromflags:manual /manualpeerlist:"$TimeServer" /update | Out-Null
-}
 
 # The rest do not apply to Windows 8 / Server 2012 platforms.
 if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*Windows 8*") )
@@ -265,7 +272,7 @@ $null = Set-ItemProperty -Path HKCU:\Software\Microsoft\GameBar -Name AutoGameMo
 "Letting Windows improve Start and search results by tracking app launches (Remember commands typed in Run)..."
 Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'Start_TrackProgs' -Type DWord -Value 1 -Force
 
-"Explorer. Adding 'Devices and Printers' to 'This PC'..."
+"Adding 'Devices and Printers' to 'This PC'..."
 New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}"
 
 "Disabling Connected User Experiences and Telemetry..."
@@ -275,7 +282,8 @@ $null = Set-Service -Name DiagTrack -StartupType Disabled
 "Setting 'Startup/Shutdown Verbose Status Messages..."
 New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System verbosestatus -Value 1
 
-"Turning off Microsoft consumer experiences (will help prevent the unwanted installation of suggested applications)..."
+# Prevent the unwanted installation of suggested applications
+"Turning off Microsoft consumer experiences..."
 $null = New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent -Name DisableWindowsConsumerFeatures -Value 1 -PropertyType "DWord" -Force -ErrorAction SilentlyContinue
 
 "Setting Windows Terminal to Automatically copy selection to clipboard..."
@@ -287,8 +295,8 @@ foreach ($pkg in $packageNames) {
 	$userSettingsPath = "$env:LOCALAPPDATA\Packages\$pkg\LocalState\settings.json"
 	if (Test-Path $userSettingsPath) {
 		$content = Get-Content $userSettingsPath -Raw
-        $content = $content -replace '("(copyOnSelect|copyFormatting)"\s*:\s*)(false|true|"[^"]*"|\[.*?\])', '$1true'
-        $content | Set-Content $userSettingsPath -Force
+		$content = $content -replace '("(copyOnSelect|copyFormatting)"\s*:\s*)(false|true|"[^"]*"|\[.*?\])', '$1true'
+		$content | Set-Content $userSettingsPath -Force
 	}
 }
 
