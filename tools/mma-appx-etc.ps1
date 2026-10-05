@@ -137,10 +137,13 @@ function Remove-Package {
 		catch {
 			# PowerShell on Windows 10: Get-AppxPackage not found
 			# https://github.com/PowerShell/PowerShell/issues/19031
-			Import-Module -Name 'Appx' -UseWindowsPowerShell -Verbose:$false
-			$AllAppxPackages = Get-AppxPackage -AllUsers -PackageTypeFilter 'All' -Verbose:$false
-		}
-	}
+            # "Import-Module -Name 'xxx' -UseWindowsPowerShell" import the 1.0 version ...
+
+            $AllAppxPackages = powershell.exe -NoProfile -Command {
+                Get-AppxPackage -AllUsers -PackageTypeFilter 'All' -Verbose:$false
+            }
+        }
+    }
 
 	process {
 		$AppxPackageNames = ($AllAppxPackages | Where-Object -Property 'Name' -EQ -Value $Name).PackageFullName
@@ -149,9 +152,9 @@ function Remove-Package {
 			
 			# The progress bar of Remove-AppxPackage mess up the terminal rendering.
 			# Use a PowerShell child process as workaround.
-			powershell -args $AppxPackageNames -NoProfile -Command {
-				$args | Remove-AppxPackage -ErrorAction SilentlyContinue
-				$args | Remove-AppxPackage -Allusers -ErrorAction SilentlyContinue
+            powershell.exe -Args $AppxPackageNames -NoProfile -Command {
+                $Args | Remove-AppxPackage -ErrorAction 'SilentlyContinue'
+                $Args | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue'
 			}
 		}
 	}
@@ -164,6 +167,7 @@ $PreinstalledAppsToRemove = @(
 	'Microsoft.BingNews'
 	'Microsoft.BingSearch'
 	'Microsoft.BingWeather'
+    'CrossDevice'
 	'Microsoft.Edge.GameAssist'
 	'Microsoft.GetHelp'
 	'Microsoft.Getstarted'
@@ -178,7 +182,7 @@ $PreinstalledAppsToRemove = @(
 	'Microsoft.WindowsFeedbackHub'
 	'Microsoft.YourPhone'
 	'Microsoft.ZuneMusic'
-	'MicrosoftWindows.CrossDevice'
+    'MoviesAndTV'
 	'MSTeams'
 
 	#'Xbox' # might be required for some games
