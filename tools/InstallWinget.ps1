@@ -132,7 +132,7 @@ catch {
 $VersionAvailable = $latest.tag_name
 
 if ($VersionInstalled -eq $VersionAvailable) {    
-    Write-Verbose "Winget $VersionInstalled is already installed, exiting..."
+    Write-Host "Winget $VersionInstalled is already installed, exiting..."
     # $ErrorActionPreference = $OriginalErrorActionPreference
     return
 }
