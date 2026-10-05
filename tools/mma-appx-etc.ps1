@@ -137,13 +137,13 @@ function Remove-Package {
 		catch {
 			# PowerShell on Windows 10: Get-AppxPackage not found
 			# https://github.com/PowerShell/PowerShell/issues/19031
-            # "Import-Module -Name 'xxx' -UseWindowsPowerShell" import the 1.0 version ...
+			# "Import-Module -Name 'xxx' -UseWindowsPowerShell" import the 1.0 version ...
 
-            $AllAppxPackages = powershell.exe -NoProfile -Command {
-                Get-AppxPackage -AllUsers -PackageTypeFilter 'All' -Verbose:$false
-            }
-        }
-    }
+			$AllAppxPackages = powershell.exe -NoProfile -Command {
+				Get-AppxPackage -AllUsers -PackageTypeFilter 'All' -Verbose:$false
+			}
+		}
+	}
 
 	process {
 		$AppxPackageNames = ($AllAppxPackages | Where-Object -Property 'Name' -EQ -Value $Name).PackageFullName
@@ -152,9 +152,9 @@ function Remove-Package {
 			
 			# The progress bar of Remove-AppxPackage mess up the terminal rendering.
 			# Use a PowerShell child process as workaround.
-            powershell.exe -Args $AppxPackageNames -NoProfile -Command {
-                $Args | Remove-AppxPackage -ErrorAction 'SilentlyContinue'
-                $Args | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue'
+			powershell.exe -Args $AppxPackageNames -NoProfile -Command {
+				$Args | Remove-AppxPackage -ErrorAction 'SilentlyContinue'
+				$Args | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue'
 			}
 		}
 	}
@@ -164,37 +164,53 @@ $PreinstalledAppsToRemove = @(
 	'A025C540.Yandex.Music'
 	'AppUp.IntelArcSoftware'
 	'Microsoft.Advertising.Xaml'
-	'Microsoft.BingNews'
-	'Microsoft.BingSearch'
-	'Microsoft.BingWeather'
-    'CrossDevice'
-	'Microsoft.Edge.GameAssist'
-    'Family'
-	'Microsoft.GetHelp'
-    'MailAndCalendar'
-    'Maps'
-	'Microsoft.Getstarted'
-    'M365Copilot'
-	'Microsoft.M365Companions'
-    'MicrosoftCopilot'
-	'Microsoft.MicrosoftOfficeHub'
-	'Microsoft.MicrosoftSolitaireCollection'
-	'Microsoft.OutlookForWindows'
-	'Microsoft.People'
-	"Microsoft.PowerAutomateDesktop"
-	'Microsoft.StorePurchaseApp'
-	"Microsoft.Windows.DevHome"
-	'Microsoft.WindowsFeedbackHub'
-	'Microsoft.YourPhone'
-	'Microsoft.ZuneMusic'
-    'MoviesAndTV'
-	'MSTeams'
 
-    'PhoneLink'
-    'QuickAssist'
-    'Tips'
-    'Weather'
-    'Widgets'
+	'Microsoft.BingSearch'
+
+	'Microsoft.ApplicationCompatibilityEnhancements'
+	'Microsoft.549981C3F5F10' # old
+	'MicrosoftWindows.CrossDevice'
+	'Microsoft.Windows.DevHome' # old
+	'Microsoft.Edge.GameAssist'
+	'MicrosoftCorporationII.MicrosoftFamily'
+	'Microsoft.WindowsFeedbackHub'
+	'Microsoft.GetHelp'
+	'Microsoft.MicrosoftJournal'
+	'microsoft.windowscommunicationsapps' # old
+	'Microsoft.WindowsMaps' # old
+	'Microsoft.ZuneMusic'
+	'Microsoft.MicrosoftOfficeHub'
+	'Microsoft.M365Companions'
+
+	'Microsoft.Copilot'
+	'Microsoft.Windows.Ai.Copilot.Provider'
+	'Microsoft.Windows.Copilot'
+	'MicrosoftWindows.Client.CoPilot'
+
+
+	'Microsoft.StorePurchaseApp'
+
+
+
+	'MSTeams'
+	'MicrosoftTeams' # old
+	'Microsoft.ZuneVideo' # old
+	'Microsoft.BingNews'
+	'Microsoft.WindowsNotepad'
+	'Microsoft.OutlookForWindows'
+
+	'Microsoft.People' # old
+	'Microsoft.YourPhone'
+	"Microsoft.PowerAutomateDesktop"
+	'MicrosoftCorporationII.QuickAssist'
+	'App.Support.QuickAssist' # Win10
+	'Microsoft.MicrosoftSolitaireCollection'
+	'Microsoft.Getstarted'
+	'Microsoft.BingWeather'
+	'Microsoft.Whiteboard'
+	'MicrosoftWindows.Client.WebExperience'
+	'Microsoft.WidgetsPlatformRuntime'
+	'Microsoft.StartExperiencesApp'
 	#'Xbox' # might be required for some games
 	'Microsoft.GamingApp'
 	'Microsoft.XboxApp' # old & Win10
@@ -204,7 +220,7 @@ $PreinstalledAppsToRemove = @(
 	'Microsoft.XboxIdentityProvider'
 	'Microsoft.XboxSpeechToTextOverlay'
 
-	# Win 10
+	# Windows 10 only
 	'Microsoft.Microsoft3DViewer' # old
 	'Microsoft.MixedReality.Portal' # old
 	'Microsoft.Office.OneNote'
