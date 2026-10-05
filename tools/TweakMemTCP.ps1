@@ -155,17 +155,17 @@ setupDWORD 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Configuration
 #     in CPU-bound games like Microsoft Flight Simulator, Assetto Corsa) and resolving compatibility
 #     issues with non-Microsoft virtualization platforms (VMware Workstation, VirtualBox)try
 try {
-    Write-Host " Disabling Windows virtualization-based security isolation`n" -fore Green
+    Write-Host "Disabling Windows virtualization-based security isolation..."
     & bcdedit.exe /set isolatedcontext No > $null
     # Set Legacy Boot menu to make use of LastKnownGood configuration
-    Write-Host " Setting Legacy Boot menu to make use of LastKnownGood configuration`n" -fore Green
+    Write-Host "Setting Legacy Boot menu to make use of LastKnownGood configuration..."
     & bcdedit.exe /set "{default}" BootMenuPolicy Legacy > $null
 	}
 catch
 {
   if ( -not $? )
   {
-  	Write-Host '   bcdedit: ' -ForegroundColor DarkGray -NoNewline
+  	Write-Host 'bcdedit: ' -ForegroundColor DarkGray -NoNewline
     Write-Host 'Error' -ForegroundColor Yellow
   }
 }
@@ -184,16 +184,17 @@ setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" Hosts
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" DnsPriority "6"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" NetbtPriority "7"
 
-# Disabling Network Throttling increases DPC latency https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
+# Disabling Network Throttling increases DPC latency 
+# https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
 # setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" "0xffffffff"
 
-"Disabling Loopback Large Mtu to fix BBR2 hangs in apps like Steam or Gradle..."
+Write-Host "Disabling Loopback Large Mtu to fix BBR2 hangs in apps like Steam or Gradle..." -NoNewline
 netsh int ip set global loopbacklargemtu=disable
-"Setting BBR2 Congestion provider..."
+Write-Host "Setting BBR2 Congestion provider..." -NoNewline
 netsh int tcp set supplemental internet congestionprovider=bbr2
-"Disabling Memory pressure protection (SYN flood drop)"
+Write-Host "Disabling Memory pressure protection (SYN flood drop)" -NoNewline
 netsh int tcp set security mpp=disabled
-"Increasing Reassembly Out Of Order Limit to 1300..."
+Write-Host "Increasing Reassembly Out Of Order Limit to 1300..." -NoNewline
 # Recommended for AmneziaWG with high junk (Jc=120) and low MTU=1280
 # Helps with heavy out-of-order fragmentation in games
 netsh int ip set global reassemblyoutoforderlimit=1300
@@ -213,7 +214,8 @@ Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyC
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue
 Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency enabled -ErrorAction SilentlyContinue
 Set-NetTCPSetting -SettingName "*" -InitialRto 2000 -ErrorAction SilentlyContinue
-try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} catch {Write-Warning "Allowing timestamps failed, skipping..."}
+try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} 
+catch {Write-Warning "Allowing timestamps failed, skipping..."}
 # Connect retry attempts using SYN packets
 Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction SilentlyContinue
 
