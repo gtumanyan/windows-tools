@@ -71,9 +71,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     ""
     }
 
-
-""
-
 # Now we make changes.
 # http://www.tomsitpro.com/articles/powershell_registry-powershell_command_line,2-152.html
 function setupDWORD {
@@ -167,7 +164,7 @@ catch
     Write-Host 'Error' -ForegroundColor Yellow
   }
 }
-
+""
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" "Size" "3"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "MaxUserPort" "65534"
 setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "TcpTimedWaitDelay" "30"
@@ -190,7 +187,7 @@ Write-Host "Disabling Loopback Large Mtu to fix BBR2 hangs in apps like Steam or
 netsh int ip set global loopbacklargemtu=disable
 Write-Host "Setting BBR2 Congestion provider..." -NoNewline
 netsh int tcp set supplemental internet congestionprovider=bbr2
-Write-Host "Disabling Memory pressure protection (SYN flood drop)" -NoNewline
+Write-Host "Disabling Memory pressure protection (SYN flood drop)..." -NoNewline
 netsh int tcp set security mpp=disabled
 Write-Host "Increasing Reassembly Out Of Order Limit to 1300..." -NoNewline
 # Recommended for AmneziaWG with high junk (Jc=120) and low MTU=1280
@@ -198,7 +195,7 @@ Write-Host "Increasing Reassembly Out Of Order Limit to 1300..." -NoNewline
 netsh int ip set global reassemblyoutoforderlimit=1300
 
 "Set-NetTCPSetting items etc..."
-Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue | Out-Null
+Set-NetOffloadGlobalSetting -Chimney disabled -ErrorAction SilentlyContinue
 Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing Disabled -ErrorAction SilentlyContinue
 Set-NetOffloadGlobalSetting -ReceiveSideScaling Enabled -ErrorAction SilentlyContinue
 

@@ -91,7 +91,6 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
     ""
     }
 
-
 # First find out how much RAM is in this machine
 
 $totalRAMinBytes = (Get-CimInstance -class "cim_physicalmemory" | Measure-Object -Property Capacity -Sum).Sum
