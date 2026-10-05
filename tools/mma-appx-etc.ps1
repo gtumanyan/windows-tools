@@ -212,7 +212,7 @@ $TimeServer = switch ('Cloudflare') {
 	'NistGov' { 'time.nist.gov' }
 	'PoolNtpOrg' { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' }
 }
-"Setting 'Internet Time Server' to '$TimeServer' ..."
+"Setting Internet Time Server to $TimeServer ..."
 Set-Service -Name 'W32Time' -StartupType Manual -ErrorAction SilentlyContinue
 Start-Service -Name 'W32Time' -ErrorAction SilentlyContinue
 $MaxRetries = 20
@@ -226,8 +226,8 @@ if ($RetryCount -eq $MaxRetries) {
 }
 # Apply NTP server and synchronize system clock
 else {
-	w32tm.exe /config /syncfromflags:manual /manualpeerlist:"$TimeServer" /update
-	w32tm.exe /resync
+	w32tm.exe /Config /SyncFromFlags:Manual /ManualPeerList:"$TimeServer" /Update *>$null
+	w32tm.exe /ReSync /Force *>$null
 	if ($LASTEXITCODE -ne 0) {
 		Write-Warning "w32tm /resync returned exit code $LASTEXITCODE. System time may not have been synchronized."
 	}
