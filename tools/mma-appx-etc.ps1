@@ -169,13 +169,18 @@ $PreinstalledAppsToRemove = @(
 	'Microsoft.BingWeather'
     'CrossDevice'
 	'Microsoft.Edge.GameAssist'
+    'Family'
 	'Microsoft.GetHelp'
+    'MailAndCalendar'
+    'Maps'
 	'Microsoft.Getstarted'
+    'M365Copilot'
 	'Microsoft.M365Companions'
+    'MicrosoftCopilot'
 	'Microsoft.MicrosoftOfficeHub'
 	'Microsoft.MicrosoftSolitaireCollection'
 	'Microsoft.OutlookForWindows'
-	'Microsoft.People' # old
+	'Microsoft.People'
 	"Microsoft.PowerAutomateDesktop"
 	'Microsoft.StorePurchaseApp'
 	"Microsoft.Windows.DevHome"
@@ -185,6 +190,11 @@ $PreinstalledAppsToRemove = @(
     'MoviesAndTV'
 	'MSTeams'
 
+    'PhoneLink'
+    'QuickAssist'
+    'Tips'
+    'Weather'
+    'Widgets'
 	#'Xbox' # might be required for some games
 	'Microsoft.GamingApp'
 	'Microsoft.XboxApp' # old & Win10
