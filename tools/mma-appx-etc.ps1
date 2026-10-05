@@ -120,7 +120,27 @@ If (-Not $MMAgentSetup.OperationAPI) {
 If (-Not $MMAgentSetup.PageCombining)
 { Enable-MMAgent -PageCombining }
 
-# Will add deprovisioning:  Remove-AppxProvisionedPackage -Online -PackageName MyAppxPkg
+# Synchronize system time to fix SSL/TLS errors caused by incorrect date and time
+$TimeServers = '3.openwrt.pool.ntp.org ntp1.vniiftri.ru ntp2.vniiftri.ru time.cloudflare.com ntp4.vniiftri.ru ntp3.vniiftri.ru 0.openwrt.pool.ntp.org'
+try {
+	Set-Service -Name W32Time -StartupType Manual -Status Running -ErrorAction Stop
+}
+catch {
+	Write-Error -Message "    Cannot start W32Time service. Settings not applied. $($_.Exception.Message)"
+	return  # Exit the script/function since we can't sync without the service
+}
+& w32tm.exe /Config /SyncFromFlags:Manual /ManualPeerList:"$TimeServers" /Update *>$null
+if ($LASTEXITCODE -ne 0) {
+	Write-Warning "w32tm /config failed with exit code $LASTEXITCODE."
+}
+$TimeSource = try { & w32tm.exe /Query /Source 2>$null } catch { "Unknown" }
+Write-Host "Syncing time to $TimeSource..."
+& w32tm.exe /ReSync /Force *>$null
+# Trigger a background sync as well
+& w32tm.exe /ReSync /NoWait *>$null
+if ($LASTEXITCODE -ne 0) {
+	Write-Warning "w32tm /resync returned exit code $LASTEXITCODE. System time may not have been synchronized."
+}
 
 function Remove-Package {
 	[CmdletBinding()]
@@ -137,14 +157,14 @@ function Remove-Package {
 		catch {
 			# PowerShell on Windows 10: Get-AppxPackage not found
 			# https://github.com/PowerShell/PowerShell/issues/19031
-            # "Import-Module -Name 'xxx' -UseWindowsPowerShell" import the 1.0 version ...
+			# "Import-Module -Name 'xxx' -UseWindowsPowerShell" import the 1.0 version ...
 
-            $AllAppxPackages = powershell.exe -NoProfile -Command {
-                Get-AppxPackage -AllUsers -PackageTypeFilter 'All' -Verbose:$false
-            }
-        }
-    }
-
+			$AllAppxPackages = powershell.exe -NoProfile -Command {
+				Get-AppxPackage -AllUsers -PackageTypeFilter 'All' -Verbose:$false
+			}
+		}
+	}
+	
 	process {
 		$AppxPackageNames = ($AllAppxPackages | Where-Object -Property 'Name' -EQ -Value $Name).PackageFullName
 		if ($AppxPackageNames) {
@@ -152,9 +172,9 @@ function Remove-Package {
 			
 			# The progress bar of Remove-AppxPackage mess up the terminal rendering.
 			# Use a PowerShell child process as workaround.
-            powershell.exe -Args $AppxPackageNames -NoProfile -Command {
-                $Args | Remove-AppxPackage -ErrorAction 'SilentlyContinue'
-                $Args | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue'
+			powershell.exe -Args $AppxPackageNames -NoProfile -Command {
+				$Args | Remove-AppxPackage -ErrorAction 'SilentlyContinue'
+				$Args | Remove-AppxPackage -AllUsers -ErrorAction 'SilentlyContinue'
 			}
 		}
 	}
@@ -164,37 +184,50 @@ $PreinstalledAppsToRemove = @(
 	'A025C540.Yandex.Music'
 	'AppUp.IntelArcSoftware'
 	'Microsoft.Advertising.Xaml'
-	'Microsoft.BingNews'
-	'Microsoft.BingSearch'
-	'Microsoft.BingWeather'
-    'CrossDevice'
-	'Microsoft.Edge.GameAssist'
-    'Family'
-	'Microsoft.GetHelp'
-    'MailAndCalendar'
-    'Maps'
-	'Microsoft.Getstarted'
-    'M365Copilot'
-	'Microsoft.M365Companions'
-    'MicrosoftCopilot'
-	'Microsoft.MicrosoftOfficeHub'
-	'Microsoft.MicrosoftSolitaireCollection'
-	'Microsoft.OutlookForWindows'
-	'Microsoft.People'
-	"Microsoft.PowerAutomateDesktop"
-	'Microsoft.StorePurchaseApp'
-	"Microsoft.Windows.DevHome"
-	'Microsoft.WindowsFeedbackHub'
-	'Microsoft.YourPhone'
-	'Microsoft.ZuneMusic'
-    'MoviesAndTV'
-	'MSTeams'
 
-    'PhoneLink'
-    'QuickAssist'
-    'Tips'
-    'Weather'
-    'Widgets'
+	'Microsoft.BingSearch'
+
+	'Microsoft.ApplicationCompatibilityEnhancements'
+	'Microsoft.549981C3F5F10' # old
+	'MicrosoftWindows.CrossDevice'
+	'Microsoft.Windows.DevHome' # old
+	'Microsoft.Edge.GameAssist'
+	'MicrosoftCorporationII.MicrosoftFamily'
+	'Microsoft.WindowsFeedbackHub'
+	'Microsoft.GetHelp'
+	'Microsoft.MicrosoftJournal'
+	'microsoft.windowscommunicationsapps' # old
+	'Microsoft.WindowsMaps' # old
+	'Microsoft.ZuneMusic'
+	'Microsoft.MicrosoftOfficeHub'
+	'Microsoft.M365Companions'
+
+	'Microsoft.Copilot'
+	'Microsoft.Windows.Ai.Copilot.Provider'
+	'Microsoft.Windows.Copilot'
+	'MicrosoftWindows.Client.CoPilot'
+
+	'Microsoft.StorePurchaseApp'
+
+	'MSTeams'
+	'MicrosoftTeams' # old
+	'Microsoft.ZuneVideo' # old
+	'Microsoft.BingNews'
+	'Microsoft.WindowsNotepad'
+	'Microsoft.OutlookForWindows'
+
+	'Microsoft.People' # old
+	'Microsoft.YourPhone'
+	"Microsoft.PowerAutomateDesktop"
+	'MicrosoftCorporationII.QuickAssist'
+	'App.Support.QuickAssist' # Win10
+	'Microsoft.MicrosoftSolitaireCollection'
+	'Microsoft.Getstarted'
+	'Microsoft.BingWeather'
+	'Microsoft.Whiteboard'
+	'MicrosoftWindows.Client.WebExperience'
+	'Microsoft.WidgetsPlatformRuntime'
+	'Microsoft.StartExperiencesApp'
 	#'Xbox' # might be required for some games
 	'Microsoft.GamingApp'
 	'Microsoft.XboxApp' # old & Win10
@@ -204,7 +237,7 @@ $PreinstalledAppsToRemove = @(
 	'Microsoft.XboxIdentityProvider'
 	'Microsoft.XboxSpeechToTextOverlay'
 
-	# Win 10
+	# Windows 10 only
 	'Microsoft.Microsoft3DViewer' # old
 	'Microsoft.MixedReality.Portal' # old
 	'Microsoft.Office.OneNote'
@@ -214,34 +247,6 @@ $PreinstalledAppsToRemove = @(
 )
 $PreinstalledAppsToRemove | Remove-Package
 
-# Synchronize system time to fix SSL/TLS errors caused by incorrect date and time
-$TimeServer = switch ('Cloudflare') {
-	'OpenWRT' { '0.openwrt.pool.ntp.org 1.openwrt.pool.ntp.org 2.openwrt.pool.ntp.org 3.openwrt.pool.ntp.org' }
-	'Cloudflare' { 'time.cloudflare.com' }
-	'Windows' { 'time.windows.com' }
-	'NistGov' { 'time.nist.gov' }
-	'PoolNtpOrg' { '0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org' }
-}
-"Setting Internet Time Server to $TimeServer ..."
-Set-Service -Name 'W32Time' -StartupType Manual -ErrorAction SilentlyContinue
-Start-Service -Name 'W32Time' -ErrorAction SilentlyContinue
-$MaxRetries = 20
-$RetryCount = 0
-while ((Get-Service -Name 'W32Time').Status -ne 'Running' -and $RetryCount -lt $MaxRetries) {
-	Start-Sleep -Seconds 0.1
-	$RetryCount++
-}
-if ($RetryCount -eq $MaxRetries) {
-	Write-Error -Message "    Cannot start W32Time service. Settings not applied."
-}
-# Apply NTP server and synchronize system clock
-else {
-	w32tm.exe /Config /SyncFromFlags:Manual /ManualPeerList:"$TimeServer" /Update *>$null
-	w32tm.exe /ReSync /Force *>$null
-	if ($LASTEXITCODE -ne 0) {
-		Write-Warning "w32tm /resync returned exit code $LASTEXITCODE. System time may not have been synchronized."
-	}
-}
 
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
