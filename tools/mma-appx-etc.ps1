@@ -268,6 +268,8 @@ $null = New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\E
 
 "Removing IDMan autorun entry..." # Didn't find any decent portable (
 Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force
+"Removing Realtek HD Panel autorun entry..." # Do we need it in the tray?
+Remove-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name RTHDVCPL -Force
 
 "Showing All Tray Icons..."
 if ( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
