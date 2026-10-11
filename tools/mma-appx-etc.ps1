@@ -247,9 +247,13 @@ $PreinstalledAppsToRemove = @(
 )
 $PreinstalledAppsToRemove | Remove-Package
 
-
 "Removing Microsoft Edge..."
 iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)} -UninstallEdge -RemoveEdgeData -NonInteractive"
+
+"Removing IDMan autorun entry..." # Didn't find any decent portable (
+Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force
+"Removing Realtek HD Panel autorun entry..." # Do we need it in the tray?
+Remove-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name RTHDVCPL -Force
 
 # AMD External Events Utility (probably want this one)
 "Stopping AMD External Events Utility..."
@@ -266,10 +270,8 @@ if (-not (Test-Path -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explor
 $null = New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "AutoSuggest" -PropertyType String -Value "yes" -Force
 $null = New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force
 
-"Removing IDMan autorun entry..." # Didn't find any decent portable (
-Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force
-"Removing Realtek HD Panel autorun entry..." # Do we need it in the tray?
-Remove-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name RTHDVCPL -Force
+Write-Host -Message "Setting Keyboard Character Repeat Delay to 0..."
+Set-ItemProperty -Path HKCU:\Control Panel\Keyboard -Name "KeyboardDelay" -Value "0" -Type String
 
 "Showing All Tray Icons..."
 if ( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
@@ -281,7 +283,6 @@ else {
 	$RegPathControlPanelNotify = ('HKCU:\Control Panel\NotifyIconSettings')
 	Foreach ($Item in Get-ChildItem $RegPathControlPanelNotify) { Set-ItemProperty -Path $Item.PSPath -Name "IsPromoted" -Value "1" -Type DWord }
 }
-
 
 # The rest do not apply to Windows 8 / Server 2012 platforms.
 if ( ($WinVersionStr -Like "*Windows Server 2012*") -Or ($WinVersionStr -Like "*Windows 8*") )
