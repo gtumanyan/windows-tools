@@ -271,7 +271,7 @@ $null = New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\E
 $null = New-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete -Name "Append Completion" -PropertyType String -Value "yes" -Force
 
 Write-Host -Message "Setting Keyboard Character Repeat Delay to 0..."
-Set-ItemProperty -Path HKCU:\Control Panel\Keyboard -Name "KeyboardDelay" -Value "0" -Type String
+Set-ItemProperty -Path "HKCU:\Control Panel\Keyboard" -Name "KeyboardDelay" -Value "0" -Type String
 
 "Showing All Tray Icons..."
 if ( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
