@@ -209,7 +209,7 @@ Set-NetTCPSetting -SettingName "*" -EcnCapability enabled -ErrorAction SilentlyC
 Set-NetTCPSetting -SettingName "*" -MinRto 300 -ErrorAction SilentlyContinue
 Set-NetTCPSetting -SettingName "*" -NonSackRttResiliency enabled -ErrorAction SilentlyContinue
 Set-NetTCPSetting -SettingName "*" -InitialRto 2000 -ErrorAction SilentlyContinue
-try {Set-NetTCPSetting -SettingName "*" -Timestamps allowed -ErrorAction Stop} 
+try {Set-NetTCPSetting -SettingName "*" -Timestamps Enabled -ErrorAction Stop} 
 catch {Write-Warning "Allowing timestamps failed, skipping..."}
 # Connect retry attempts using SYN packets
 Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction SilentlyContinue
