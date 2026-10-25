@@ -33,6 +33,11 @@ function Add-ToEnvironmentPath {
     Add-ToEnvironmentPath -PathToAdd "C:\Program Files\MyApp" -Scope 'System'
     #>
 
+""
+***************
+ InstallWinGet
+***************
+""
     # Check if the path is already in the environment PATH variable
     if (-not (Path-ExistsInEnvironment -PathToCheck $PathToAdd -Scope $Scope)) {
         if ($Scope -eq 'System') {
@@ -165,10 +170,10 @@ try { Add-AppxPackage $bundlePath -ForceUpdateFromAnyVersion -ForceApplicationSh
 # Install with dependencies (slower)
 catch {
     # ------------------------------------------------------------------------ #
-    # Dependencies (only when winget is absent)
+    # Dependencies (only when winget is absent or very old)
     # ------------------------------------------------------------------------ #
     Write-Output "Installing with dependencies (slower)..."
-
+    
     $DepsZip = 'DesktopAppInstaller_Dependencies.zip'
     $depAsset = $latest.assets | Where-Object { $_.name -eq $DepsZip }
     if (-not $depAsset) { throw 'Could not find the dependencies ZIP asset in the latest release.' }

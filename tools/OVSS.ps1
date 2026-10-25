@@ -88,11 +88,9 @@ Param()
 #
 
 ""
-""
 "******************"
 "   Optimize VSS   "
 "******************"
-""
 ""
 
 # Self-elevate if not already elevated.

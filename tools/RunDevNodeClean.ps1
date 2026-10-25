@@ -35,22 +35,6 @@ device nodes in the registry, improving performance.
 
 #> 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <#
 
 .DESCRIPTION 
