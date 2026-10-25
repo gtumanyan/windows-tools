@@ -35,54 +35,6 @@ also defrags NTFS metafiles using Contig.
 
 #> 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <#
 
 .DESCRIPTION 
@@ -112,11 +64,10 @@ Param()
 #
 
 ""
-""
 "*****************"
 "   TweakDrives   "
 "*****************"
-
+""
 # Self-elevate if not already elevated.
 if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
     {

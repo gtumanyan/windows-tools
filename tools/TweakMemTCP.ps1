@@ -54,11 +54,9 @@ Param()
 #
 
 ""
-""
 "**************************************************"
 "   TweakMemTCP: Tweak Memory and TCP Parameters   "
 "**************************************************"
-""
 ""
 
 # Self-elevate if not already elevated.

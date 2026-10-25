@@ -1,11 +1,14 @@
-﻿# $OriginalErrorActionPreference = $ErrorActionPreference
-# $ErrorActionPreference = 'Stop'
-
-if ($Host.Version.Major -eq 5) {
+﻿if ($Host.Version.Major -eq 5) {
     # Progress bar can significantly impact cmdlet performance
     # https://github.com/PowerShell/PowerShell/issues/2138
     $Script:ProgressPreference = "SilentlyContinue"
 }
+
+""
+"**************************************************************"
+"   InstallWinget: Install or update Windows Package Manager   "
+"**************************************************************"
+""
 
 function Add-ToEnvironmentPath {
     param (
@@ -132,7 +135,7 @@ catch {
 $VersionAvailable = $latest.tag_name
 
 if ($VersionInstalled -eq $VersionAvailable) {    
-    Write-Host "Winget $VersionInstalled is already installed, exiting..."
+    Write-Host "Winget $VersionInstalled is already installed, exiting..." -ForegroundColor Green
     # $ErrorActionPreference = $OriginalErrorActionPreference
     return
 }
@@ -165,10 +168,10 @@ try { Add-AppxPackage $bundlePath -ForceUpdateFromAnyVersion -ForceApplicationSh
 # Install with dependencies (slower)
 catch {
     # ------------------------------------------------------------------------ #
-    # Dependencies (only when winget is absent)
+    # Dependencies (only when winget is absent or very old)
     # ------------------------------------------------------------------------ #
     Write-Output "Installing with dependencies (slower)..."
-
+    
     $DepsZip = 'DesktopAppInstaller_Dependencies.zip'
     $depAsset = $latest.assets | Where-Object { $_.name -eq $DepsZip }
     if (-not $depAsset) { throw 'Could not find the dependencies ZIP asset in the latest release.' }
