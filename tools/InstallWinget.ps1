@@ -36,6 +36,11 @@ function Add-ToEnvironmentPath {
     Add-ToEnvironmentPath -PathToAdd "C:\Program Files\MyApp" -Scope 'System'
     #>
 
+""
+***************
+ InstallWinGet
+***************
+""
     # Check if the path is already in the environment PATH variable
     if (-not (Path-ExistsInEnvironment -PathToCheck $PathToAdd -Scope $Scope)) {
         if ($Scope -eq 'System') {
