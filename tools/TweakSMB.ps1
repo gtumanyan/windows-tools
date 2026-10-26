@@ -107,7 +107,6 @@ Set-SmbServerConfiguration -MaxSessionPerConnection 16384 -force -ErrorAction Si
 Set-SmbServerConfiguration -TreatHostAsStableStorage $true -force -ErrorAction SilentlyContinue
 ""
 "Done!"
-""
 
 # The 3-Clause BSD License
 
