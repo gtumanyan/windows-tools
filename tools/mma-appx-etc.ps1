@@ -252,6 +252,10 @@ iex "&{$(irm https://raw.githubusercontent.com/he3als/EdgeRemover/main/get.ps1)}
 
 "Removing IDMan autorun entry..." # Didn't find any decent portable (
 Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name IDMan -Force
+	
+"Diasbling Apps Resume..."
+Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Connectivity\DisableCrossDeviceResume -Name "value" -Value "1" -Type DWord
+	
 "Removing Realtek HD Panel autorun entry..." # Do we need it in the tray?
 Remove-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Name RTHDVCPL -Force
 
