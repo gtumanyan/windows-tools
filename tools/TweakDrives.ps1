@@ -97,9 +97,6 @@ Get-PhysicalDisk | ForEach-Object {
 
 # Using & instead of Invoke-Expression, this appears to be security-positive, hopefully less apt to be false-positived by security tools
 
-# Make sure short filenames are enabled
-& fsutil 8dot3name set 1 | Out-Null
-
 # Use more RAM for disk caching
 & fsutil behavior set memoryusage 2 | Out-Null
 

@@ -145,9 +145,6 @@ Get-PhysicalDisk | ForEach-Object {
 
 # Using & instead of Invoke-Expression, this appears to be security-positive, hopefully less apt to be false-positived by security tools
 
-# Make sure short filenames are enabled
-& fsutil 8dot3name set 1 | Out-Null
-
 # Disable Last Access Time stamp in directories, for performance. Does not cause ill effects, widely tested.
 & fsutil behavior set DisableLastAccess 1 | Out-Null
 
