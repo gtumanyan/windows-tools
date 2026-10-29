@@ -69,14 +69,14 @@ Param()
 "*****************"
 ""
 # Self-elevate if not already elevated.
-if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-    {
-    } else {
-    "Not running as elevated.  Starting elevated shell."
-    Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file $PSCommandPath"
-    return "Done. This one will now exit."
-    ""
-    }
+if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+}
+else {
+	"Not running as elevated.  Starting elevated shell."
+	Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file $PSCommandPath"
+	return "Done. This one will now exit."
+	""
+}
 
 # Do TRIM if possible for all volumes on SSDs...
 
@@ -89,16 +89,37 @@ Get-PhysicalDisk | ForEach-Object {
 		Get-Volume -Partition $_ | Optimize-Volume -Retrim -Verbose -ErrorAction SilentlyContinue
 		"Initiating SlabConsolidate if appropriate for partition number " + $_.PartitionNumber
 		Get-Volume -Partition $_ | Optimize-Volume -SlabConsolidate -Verbose -ErrorAction SilentlyContinue
-		}
 	}
-
+}
+""
 "Tweaks for all drives..."
 ""
 
-# Using & instead of Invoke-Expression, this appears to be security-positive, hopefully less apt to be false-positived by security tools
+$ramModules = Get-CimInstance Win32_PhysicalMemory
+$TotalMemory = [math]::Round(($ramModules | Measure-Object Capacity -Sum).Sum / 1GB, 2)
+	
+# Terminal output
+Write-Host "Total RAM: $TotalMemory GB"
+Write-Host "Modules: $($ramModules.Count)"
+$ramModules | ForEach-Object {
+	Write-Host "- $([math]::Round($_.Capacity / 1GB, 2)) GB, $($_.Speed) MHz, $($_.Manufacturer)"
+}
 
-# Use more RAM for disk caching
-& fsutil behavior set memoryusage 2 | Out-Null
+# -------------------------
+# Configure MFT and Memory Usage
+# -------------------------
+if ($TotalMemory -lt 8) {
+	fsutil behavior set memoryusage 1
+    fsutil behavior set mftzone 1
+} elseif ($TotalMemory -lt 16) {
+	fsutil behavior set memoryusage 1
+    fsutil behavior set mftzone 2
+} else {
+	fsutil behavior set memoryusage 2
+    fsutil behavior set mftzone 2
+}
+
+# Using & instead of Invoke-Expression, this appears to be security-positive, hopefully less apt to be false-positived by security tools
 
 # Disable Last Access Time stamp in directories, for performance. Does not cause ill effects, widely tested.
 & fsutil behavior set DisableLastAccess 1 | Out-Null
@@ -111,7 +132,7 @@ function Unzip {
 	param([string]$zipfile, [string]$outpath)
 
 	Expand-Archive -Path $zipfile -DestinationPath $outpath -Force
-	}
+}
 
 function Install-Contig {
     
@@ -119,7 +140,7 @@ function Install-Contig {
 
 	"Setting up to download Contig..."
 
-	$TempFolderName = -join ((65..90) + (97..122) | Get-Random -Count 10 | ForEach-Object {[char]$_})
+	$TempFolderName = -join ((65..90) + (97..122) | Get-Random -Count 10 | ForEach-Object { [char]$_ })
 
 	$envTEMP = [Environment]::GetEnvironmentVariable("TEMP")
 	$TempPath = "$envTEMP\$TempFolderName"
@@ -143,7 +164,7 @@ function Install-Contig {
 	$envWINDIR = [Environment]::GetEnvironmentVariable("WINDIR")
 	Unzip "$TempPath\Contig.zip" "$envWINDIR"
 
-    }
+}
 	
 function Defrag-NTFS-Metafiles {
 	param([string]$DriveID)
@@ -155,9 +176,10 @@ function Defrag-NTFS-Metafiles {
 	if ([System.IntPtr]::Size -eq 4) {
 		# 32-bit OS
 		$cmdstr = "CONTIG"
-		} else {
+	}
+ else {
 		$cmdstr = "CONTIG64"
-		}
+	}
 
 	'$Mft ...'
 	& $cmdstr -nobanner -accepteula $DriveID $Mft | Out-Null
@@ -180,7 +202,7 @@ function Defrag-NTFS-Metafiles {
 	'$Extend ...'
 	& $cmdstr -nobanner -accepteula $DriveID $Extend | Out-Null
 
-	}
+}
 	
 "Get Contig to defragment NTFS metafiles..."
 
@@ -189,11 +211,10 @@ Install-Contig
 # Do NTFS reliability and performance settings for all volumes
 
 Get-CimInstance -Query "Select * FROM Win32_LogicalDisk WHERE DriveType=3" | ForEach-Object {
-    $DriveID = $_.DeviceID
+	$DriveID = $_.DeviceID
 
-    If ($DriveID -match "[A-Z]")
-        {
-        "Tweaking " + $DriveID + " ..."
+	If ($DriveID -match "[A-Z]") {
+		"Tweaking " + $DriveID + " ..."
 		""
 		
 		"fsutil repair (Self-Healing NTFS)..."
@@ -208,8 +229,8 @@ Get-CimInstance -Query "Select * FROM Win32_LogicalDisk WHERE DriveType=3" | For
 		"fsutil resource setlog shrink 10 ..."
 		& fsutil resource setlog shrink 10 $DriveIDslash | Out-Null
 		""
-        }
-    }
+	}
+}
 	
 "Done!"
 
