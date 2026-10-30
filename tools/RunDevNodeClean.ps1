@@ -1,76 +1,32 @@
-
-<#PSScriptInfo
-
-.VERSION 1.3
-
-.GUID 2f1b0fa1-c184-47e6-b65c-8ed5c92db371
-
-.AUTHOR Jonathan E. Brickman
-
-.COMPANYNAME Ponderworthy Music
-
-.COPYRIGHT (c) 2019 Jonathan E. Brickman
-
-.TAGS
-
-.LICENSEURI https://opensource.org/licenses/BSD-3-Clause
-
-.PROJECTURI https://github.com/jebofponderworthy/windows-tools
-
-.ICONURI
-
-.EXTERNALMODULEDEPENDENCIES 
-
-.REQUIREDSCRIPTS
-
-.EXTERNALSCRIPTDEPENDENCIES
-
-.RELEASENOTES
-RunDevNodeClean
-Downloads the DevNodeClean package, chooses the binary appropriate to
-the bit-width of the current OS, and runs it.  This cleans unused
-device nodes in the registry, improving performance.
-
-.PRIVATEDATA
-
-#> 
-
 <#
-
 .DESCRIPTION 
-RunDevNodeClean - cleans unused device nodes in registry, improves performance
-
+RunDeviceCleanup - removes all non-present devices, that haven't been connected to the system in 3 months or longer
 #>
 
-Param()
-
-
-###################################
-#  Download and Run DevNodeClean  #
-###################################
+####################################
+#  Download and Run DeviceCleanup  #
+####################################
 
 #
-# by Jonathan E. Brickman
+# by Gregory G. Tumanyan
 #
-# Downloads the DevNodeClean package, chooses the binary
+# Downloads the Device Cleanup Cmd, chooses the binary
 # appropriate to the bit-width of the current OS, and runs it.
 # This cleans unused device nodes in the registry,
 # improving performance
 #
-# Copyright 2020 Jonathan E. Brickman
-# https://notes.ponderworthy.com/
+# Copyright 2026 Gregory G. Tumanyan
+# https://t.me/Snappy_Driver_Installer
 # This script is licensed under the 3-Clause BSD License
 # https://opensource.org/licenses/BSD-3-Clause
 # and is reprised at the end of this file
 #
 
 ""
-"*********************"
-"   RunDevNodeClean   "
-"*********************"
+"**********************"
+"   RunDeviceCleanup   "
+"**********************"
 ""
-
-$StartupDir = $pwd
 
 # First, set up temporary space and move there.
 
@@ -79,59 +35,49 @@ $StartupDir = $pwd
 $TempFolderName = -join ((65..90) + (97..122) | Get-Random -Count 10 | ForEach-Object {[char]$_})
 
 $envTEMP = [Environment]::GetEnvironmentVariable("TEMP")
-$TempPath = "$envTEMP\$TempFolderName"
+$TempPath = Join-Path $envTEMP $TempFolderName
 New-Item $TempPath -Force -ItemType Container | Out-Null
 
-# Then download the zip file.
+# Pick URL by bitness
+if ([System.IntPtr]::Size -eq 4) {
+    # 32-bit OS
+    $download_url = 'https://www.uwe-sieber.de/files/DeviceCleanup_Win32.zip'
+} else {
+    # 64-bit OS
+    $download_url = 'https://www.uwe-sieber.de/files/DeviceCleanupCmd_x64.zip'
+}
 
-"Downloading the binary from Microsoft..."
+$zipFileName = Split-Path $download_url -Leaf
+$zipFile = Join-Path $TempPath $zipFileName
 
-$download_url = 'https://download.microsoft.com/download/B/C/6/BC670519-7EA1-44BE-8B5C-6FF83A7FF96C/devnodeclean.zip'
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-Invoke-WebRequest -Uri $download_url -Outfile "$TempPath\devnodeclean.zip"
-
-# Now unpack the zip file.
+"Downloading $download_url ..."
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest -Uri $download_url -OutFile $zipFile -UseBasicParsing
 
 "Unpacking..."
-
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Unzip {
     param([string]$zipfile, [string]$outpath)
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath) | Out-Null
+}
 
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath) > $null
-	}
+Unzip $zipFile $TempPath
 
-Unzip "$TempPath\devnodeclean.zip" "$TempPath"
+# Find what we just unpacked - works for both
+# DeviceCleanupCmd_x64.zip -> DeviceCleanupCmd.exe
+# DeviceCleanup_Win32.zip -> DeviceCleanup.exe
+$exe = Get-ChildItem -Path $TempPath -Recurse -Filter "DeviceCleanup*.exe" | Select-Object -First 1 -ExpandProperty FullName
 
-# Now get the bit-width of the operating system, and
-# run the appropriate binary.
+if (-not $exe) {
+    throw "No DeviceCleanup exe found in $TempPath"
+}
 
-# Runs it twice, for some reason the first run
-# often misses some.
-
-if ([System.IntPtr]::Size -eq 4) {
-    # 32-bit OS
-	"Running 32-bit binary..."
-	""
-	& $TempPath\x86\DevNodeClean.exe
-	& $TempPath\x86\DevNodeClean.exe
-	} else {
-	# 64-bit OS
-	"Running 64-bit binary..."
-	& $TempPath\x64\DevNodeClean.exe
-	& $TempPath\x64\DevNodeClean.exe
-	}
-
-""
+"Running $exe ..."
+& $exe '* -m:3m -s -n -v'
 
 # Clean up.
 
-"Cleaning up..."
-
-Set-Location $StartupDir
-Remove-Item -Path $TempPath -Force -Recurse -ErrorAction SilentlyContinue
-
-"Done!"
+Write-Host "Cleaning up..." -NoNewline; Remove-Item $TempPath -Recurse -Force; Write-Host " Done!"
 
 # The 3-Clause BSD License
 
@@ -175,5 +121,3 @@ Remove-Item -Path $TempPath -Force -Recurse -ErrorAction SilentlyContinue
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-
