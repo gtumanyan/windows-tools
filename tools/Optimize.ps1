@@ -58,7 +58,7 @@ try {
     
     $ps_script_list = @(
         'mma-appx-etc.ps1',
-        'RunDevNodeClean.ps1',
+        'DeviceCleanup.ps1',
         'wt_removeGhosts.ps1',
         'OWTAS.ps1',
         'OVSS.ps1',
