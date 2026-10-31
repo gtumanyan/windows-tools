@@ -1,48 +1,34 @@
-<#PSScriptInfo
-
-.VERSION 2.81+
-
-.GUID 5cc3176c-2e44-40d7-8ead-592e4e2e3665
-
-.AUTHOR Jonathan E. Brickman & Gregory G. Tumanyan
-
-.COMPANYNAME Ponderworthy Music
-
-.COPYRIGHT (c) 2020 Jonathan E. Brickman
-
-.TAGS
-
-.LICENSEURI https://opensource.org/licenses/BSD-3-Clause
-
-.PROJECTURI https://github.com/jebofponderworthy/windows-tools
-
-.ICONURI
-
-.EXTERNALMODULEDEPENDENCIES
-
-.REQUIREDSCRIPTS
-
-.EXTERNALSCRIPTDEPENDENCIES
-
-.RELEASENOTES
-mma-appx-etc - performance gains of several kinds new to Windows 8/10/201*
-Configures MMAgent (including Superfetch, Memory Compression, etc.) for performance,
-removes several consumer-grade appx items, removes Edge Browser,
-and disables Game Mode.
-#>
-
 <#
-.DESCRIPTION
-mma-appx-etc - performance gains of several kinds new to Windows 8/10/201*
+Purpose:       Script to remove many of the pre-loaded Microsoft Metro "modern app" bloatware
+               Add any AppX to this list to target them for removal
+Requirements:  1. Administrator access
+               2. Windows 8 and up
+Author:        WindR https://t.me/Snappy_Driver_Installer
+Version:       3 ! Edge browser removal and much more
+                 ! Remove installed packages for all users (Windows 10 1803 and up) instead of only the user running the script. Falls back to the
+					current user if the all-users removal fails
+                 + Stop early if not run as Administrator
+				 + Never require a sign-in on wake
+				 + Synchronize system time to fix SSL/TLS errors in other scripts
+				 + Show all tray icons even on Windows 11 (requires relaunch if new icons are hidden)
+				 + Remove IDMan startup
+				 + Disable apps resume
+				 + Removing Realtek HD Panel from autorun
+				 + Do not autostart AMD External Events Utility
+				 + Enable Inline AutoComplete in File Explorer and Run
+				 + Minimize Keyboard Character Repeat Delay
+				 + Remember commands typed in Run menu
+				 + Add 'Devices and Printers' to 'This PC' (Do we really need it here?)
+				 + Startup/Shutdown Verbose Status Messages
+				 + Set Windows Terminal to Automatically copy selection to clipboard
 #>
-Param()
-#####################################################################
-# MMA, appx, and other 8+/2012+/10/201*/11/202* performance items   #
-# v2.81                                                             #
-#####################################################################
-#
-# by Jonathan E. Brickman
-#
+# Using this to suppress much error output:
+$ErrorActionPreference = "SilentlyContinue"
+
+#################################################################
+# MMA, appx, and other 8+/2012+/10/201*/11/2* performance items #
+# v3															#
+#################################################################
 # Speeds up Windows 8+/2012+, with special attention to 10 and up.  Specifically:
 #
 # 1. Set MMAgent for performance.  This includes Superfetch,
@@ -57,20 +43,17 @@ Param()
 # 3. Removes Edge browser.
 #
 # 4. Turns off Game Mode.
-#
-# The latter two changes identified by the extraordinary Joe Busby.
-#
-# Copyright 2019 Jonathan E. Brickman
-# https://notes.ponderworthy.com/
-# This script is licensed under the 3-Clause BSD License
-# https://opensource.org/licenses/BSD-3-Clause
-# and is reprised at the end of this file
-#
+
+# Must be run as Administrator, otherwise provisioned packages can't be removed
+If (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+	Write-Output "   ERROR: Not running as Administrator. No apps removed."
+	exit 1
+}
 
 ""
-"*********************************************************************"
-"   MMA, appx, and other 8+/2012+/10/201*/11/202* performance items   "
-"*********************************************************************"
+"*******************************************************************"
+"   MMA, appx, and other 8+/2012+/10/201*/11/2* performance items 	"
+"*******************************************************************"
 ""
 
 # Never require a sign-in on wake (ConsoleLock: 0 = never, 1 = when the PC wakes from sleep).
@@ -86,9 +69,6 @@ if ($WinVersionStr -Like "*Windows 7*") {
 	""
 	exit 0
 }
-
-# Using this to suppress much error output:
-$ErrorActionPreference = 'silentlycontinue'
 
 "Configuring and enabling aspects of MMAgent..."
 Set-MMAgent -MaxOperationAPIFiles 1024
@@ -179,71 +159,96 @@ function Remove-Package {
 		}
 	}
 }
-
+# Active identifiers
 $PreinstalledAppsToRemove = @(
 	'A025C540.Yandex.Music'
 	'AppUp.IntelArcSoftware'
-	'Microsoft.Advertising.Xaml'
-
-	'Microsoft.BingSearch'
-
+	"BrowserChoice"                             # "Browser Choice" screen required by the EU antitrust regulation
+	"Microsoft.Advertisin*"                     # Advertising framework, catches the base package + named variants
 	'Microsoft.ApplicationCompatibilityEnhancements'
-	'Microsoft.549981C3F5F10' # old
-	'MicrosoftWindows.CrossDevice'
-	'Microsoft.Windows.DevHome' # old
-	'Microsoft.Edge.GameAssist'
-	'MicrosoftCorporationII.MicrosoftFamily'
-	'Microsoft.WindowsFeedbackHub'
-	'Microsoft.GetHelp'
-	'Microsoft.MicrosoftJournal'
-	'microsoft.windowscommunicationsapps' # old
-	'Microsoft.WindowsMaps' # old
-	'Microsoft.ZuneMusic'
-	'Microsoft.MicrosoftOfficeHub'
-	'Microsoft.M365Companions'
-
+	"Microsoft.BingFinance"                     # Money app - Financial news
+	"Microsoft.BingFoodAndDrink"                # Food and Drink app
+	"Microsoft.BingHealthAndFitness"            # Health and Fitness app
+	"Microsoft.BingMaps"
+	"Microsoft.BingNews"                        # Generic news app
+	'Microsoft.BingSearch'
+	"Microsoft.BingSports"                      # Sports app - Sports news
+	"Microsoft.BingTranslator"                  # Translator app - Bing Translate
+	"Microsoft.BingTravel"                      # Travel app
+	"Microsoft.BingWeather"                     # Weather app
+	"Microsoft.CommsPhone"                      # Phone app
+	"Microsoft.ConnectivityStore"
 	'Microsoft.Copilot'
+	"Microsoft.DiagnosticDataViewer"
+	'Microsoft.Edge.GameAssist'
+	"Microsoft.ForzaHorizon3Demo"
+	"Microsoft.ForzaMotorsport7Demo"
+	"Microsoft.FrenchRiviera"
+	"Microsoft.FreshPaint"                      # Canvas app
+	"Microsoft.GamingApp"
+	'Microsoft.GetHelp'
+	"Microsoft.Getstarted"                      # Get Started link
+	"Microsoft.HelpAndTips"
+	"Microsoft.HoganThreshold"
+	"Microsoft.Lucille"                         # "Browser Choice" screen required by the EU antitrust regulation
+	"Microsoft.M365Companions"
+	"Microsoft.Messaging"                       # Messaging app
+	"Microsoft.MicrosoftJackpot"                # Jackpot app
+	"Microsoft.MicrosoftJigsaw"                 # Jigsaw app
+	'Microsoft.MicrosoftJournal'
+	"Microsoft.MicrosoftMahjong"                # Mahjong game
+	'Microsoft.WindowsMaps' 					# old
+	'Microsoft.MicrosoftOfficeHub'
+	"Microsoft.MicrosoftRewards"
+	"Microsoft.MicrosoftSudoku"
+	"Microsoft.MicrosoftTreasureHunt"
+	"Microsoft.MinecraftUWP"
+	"Microsoft.MovieMoments"
+	'MicrosoftWindows.Client.CoPilot'
+	"Microsoft.Office.OneNote"                  # Onenote app
+	"Microsoft.Office.Sway"                     # Sway app
+	"Microsoft.OneConnect"                      # OneConnect app
+	"Microsoft.People"                          # People app
+	"Microsoft.SeaofThieves"
+	"Microsoft.SkypeApp"                        # Get Skype link
+	"Microsoft.SkypeWiFi"
+	"Microsoft.Studios.Wordament"               # imported from stage_2_de-bloat.bat
+	"Microsoft.SurfaceDiagnostics"              # added 2021-06-02
 	'Microsoft.Windows.Ai.Copilot.Provider'
 	'Microsoft.Windows.Copilot'
-	'MicrosoftWindows.Client.CoPilot'
-
-	'Microsoft.StorePurchaseApp'
-
-	'MSTeams'
-	'MicrosoftTeams' # old
-	'Microsoft.ZuneVideo' # old
-	'Microsoft.BingNews'
-	'Microsoft.WindowsNotepad'
-	'Microsoft.OutlookForWindows'
-
-	'Microsoft.People' # old
-	'Microsoft.YourPhone'
-	"Microsoft.PowerAutomateDesktop"
+	'Microsoft.Windows.CrossDevice'
+	"Microsoft.Windows.DevHome"
+	"Microsoft.Windows.FeatureOnDemand.InsiderHub"
+	"Microsoft.WindowsFeedbackHub"              # Feedback app
+	"Microsoft.WindowsMaps"                    	# Maps app
+	"Microsoft.WindowsReadingList"
+	"Microsoft.WorldNationalParks"
 	'MicrosoftCorporationII.QuickAssist'
-	'App.Support.QuickAssist' # Win10
-	'Microsoft.MicrosoftSolitaireCollection'
-	'Microsoft.Getstarted'
+	"Windows.ContactSupport"
+	'App.Support.QuickAssist' 					# Win10
+	"Microsoft.MicrosoftSolitaireCollection"   	# Solitaire collection
 	'Microsoft.BingWeather'
 	'Microsoft.Whiteboard'
 	'MicrosoftWindows.Client.WebExperience'
 	'Microsoft.WidgetsPlatformRuntime'
 	'Microsoft.StartExperiencesApp'
 	#'Xbox' # might be required for some games
-	'Microsoft.GamingApp'
-	'Microsoft.XboxApp' # old & Win10
+	'Microsoft.XboxApp' 						# old & Win10
 	'Microsoft.Xbox.TCUI'
 	'Microsoft.XboxGameOverlay'
 	'Microsoft.XboxGamingOverlay'
 	'Microsoft.XboxIdentityProvider'
 	'Microsoft.XboxSpeechToTextOverlay'
-
+	'Microsoft.ZuneMusic'
+	'MSTeams'
+		
 	# Windows 10 only
-	'Microsoft.Microsoft3DViewer' # old
-	'Microsoft.MixedReality.Portal' # old
-	'Microsoft.Office.OneNote'
-	'Microsoft.MSPaint' # old
-	'Microsoft.SkypeApp' # old
-	'Microsoft.Wallet' # old
+	'Microsoft.Microsoft3DViewer' 				# old
+	'Microsoft.MixedReality.Portal' 			# old
+	'Microsoft.Office.OneNote'					# Onenote app
+	'Microsoft.MSPaint' 						# old
+	'Microsoft.SkypeApp' 						# old
+	'Microsoft.Wallet' 							# old
 )
 $PreinstalledAppsToRemove | Remove-Package
 
@@ -299,7 +304,7 @@ $null = Set-ItemProperty -Path HKCU:\Software\Microsoft\GameBar -Name AutoGameMo
 Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'Start_TrackProgs' -Type DWord -Value 1 -Force
 
 "Adding 'Devices and Printers' to 'This PC'..."
-New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}"
+New-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}
 
 "Disabling Connected User Experiences and Telemetry..."
 Stop-Service -Name "DiagTrack" 2>&1
