@@ -1,4 +1,16 @@
-﻿if ($Host.Version.Major -eq 5) {
+﻿<#
+.SYNOPSIS
+    Downloads and installs the latest version of winget and its dependencies.
+.DESCRIPTION
+    Downloads and installs the latest version of winget and its dependencies.
+
+    This script is designed to be straightforward and easy to use, removing the hassle of manually downloading, installing, and configuring winget. This function should be run with administrative privileges.
+.EXAMPLE
+    winget-install
+.LINK
+    Project Site: https://github.com/gtumanyan/windows-tools
+#>
+if ($Host.Version.Major -eq 5) {
     # Progress bar can significantly impact cmdlet performance
     # https://github.com/PowerShell/PowerShell/issues/2138
     $Script:ProgressPreference = "SilentlyContinue"
@@ -36,37 +48,37 @@ function Add-ToEnvironmentPath {
     Add-ToEnvironmentPath -PathToAdd "C:\Program Files\MyApp" -Scope 'System'
     #>
 
-""
-***************
- InstallWinGet
-***************
-""
+    ""
+    ***************
+    InstallWinGet
+    ***************
+    ""
     # Check if the path is already in the environment PATH variable
     if (-not (Path-ExistsInEnvironment -PathToCheck $PathToAdd -Scope $Scope)) {
-        if ($Scope -eq 'System') {
-            # Get the current system PATH
-            $systemEnvPath = [System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::Machine)
-            # Add to system PATH
-            $systemEnvPath += ";$PathToAdd"
-            [System.Environment]::SetEnvironmentVariable('PATH', $systemEnvPath, [System.EnvironmentVariableTarget]::Machine)
-            Write-Debug "Adding $PathToAdd to the system PATH."
+        $currentPath = Get-RawEnvironmentPath -Scope $Scope
+        $newPath = if ($currentPath) { $currentPath.TrimEnd(';') + ";$PathToAdd" } else { $PathToAdd }
+
+        # ExpandString (REG_EXPAND_SZ) keeps %VAR% entries expandable by Windows, see Get-EnvironmentPathRegistryKey
+        Set-ItemProperty -Path (Get-EnvironmentPathRegistryKey -Scope $Scope) -Name 'Path' -Value $newPath -Type ExpandString
+        Write-Debug "Adding $PathToAdd to the $Scope PATH."
+
+        # Notify running processes (such as Explorer) that the environment changed, as SetEnvironmentVariable would have done
+        if (-not ('WingetInstall.NativeMethods' -as [type])) {
+            Add-Type -Namespace WingetInstall -Name NativeMethods -MemberDefinition @'
+[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);
+'@
         }
-        elseif ($Scope -eq 'User') {
-            # Get the current user PATH
-            $userEnvPath = [System.Environment]::GetEnvironmentVariable('PATH', [System.EnvironmentVariableTarget]::User)
-            # Add to user PATH
-            $userEnvPath += ";$PathToAdd"
-            [System.Environment]::SetEnvironmentVariable('PATH', $userEnvPath, [System.EnvironmentVariableTarget]::User)
-            Write-Debug "Adding $PathToAdd to the user PATH."
-        }
+        $broadcastResult = [UIntPtr]::Zero
+        # HWND_BROADCAST, WM_SETTINGCHANGE, SMTO_ABORTIFHUNG, 5 second timeout
+        [void][WingetInstall.NativeMethods]::SendMessageTimeout([IntPtr]0xffff, 0x1A, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$broadcastResult)
 
         # Update the current process environment PATH
         if (-not ($env:PATH -split ';').Contains($PathToAdd)) {
             $env:PATH += ";$PathToAdd"
             Write-Debug "Adding $PathToAdd to the current process environment PATH."
         }
-    }
-    else {
+    } else {
         Write-Debug "$PathToAdd is already in the PATH."
     }
 }
@@ -101,8 +113,7 @@ function Set-PathPermissions {
     # Retrieve the current ACL for the folder
     try {
         $acl = Get-Acl -Path $FolderPath -ErrorAction Stop
-    }
-    catch {
+    } catch {
         Write-Warning "Failed to retrieve ACL for '$FolderPath'. Error: $($_.Exception.Message)"
         return
     }
@@ -120,8 +131,7 @@ function Set-PathPermissions {
     try {
         $acl.SetAccessRule($accessRule)
         Set-Acl -Path $FolderPath -AclObject $acl -ErrorAction Stop
-    }
-    catch {
+    } catch {
         Write-Warning "Failed to apply ACL to '$FolderPath'. Error: $($_.Exception.Message)"
     }
 }
@@ -139,9 +149,9 @@ catch {
 
 $VersionAvailable = $latest.tag_name
 
+# Check if winget is already installed
 if ($VersionInstalled -eq $VersionAvailable) {    
     Write-Host "Winget $VersionInstalled is already installed, exiting..." -ForegroundColor Green
-    # $ErrorActionPreference = $OriginalErrorActionPreference
     return
 }
 
@@ -165,7 +175,7 @@ if (-not $bundleAsset) { throw "Could not find msixbundle asset in latest releas
 $bundlePath = $bundleAsset.browser_download_url
 
 # ============================================================================ #
-# Beginning of installation process
+#             Install winget
 # ============================================================================ #
 # Install winget assuming dependencies are already installed
 Write-Output "Installing winget..."
@@ -188,8 +198,7 @@ catch {
     $DepsZip = Join-Path $cacheDir $DepsZip
     if ((Test-Path $DepsZip) -and (Get-FileHash $DepsZip).Hash.ToLower() -eq ($depAsset.digest -replace '^sha256:')) {
         Write-Verbose "$DepsZip is current — skipping download."
-    }
-    else {
+    } else {
         Write-Host "Downloading winget dependencies from $winget_dependencies_url to $cacheDir`n`n"
         Invoke-WebRequest -Uri $winget_dependencies_url -OutFile $DepsZip -Verbose
         Expand-Archive $DepsZip -DestinationPath $cacheDir -Force
@@ -198,8 +207,7 @@ catch {
     # Get OS details using Get-CimInstance because the registry key for Name is not always correct with Windows 11
     try {
         $osDetails = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
-    }
-    catch {
+    } catch {
         throw "Unable to run the command ""Get-CimInstance -ClassName Win32_OperatingSystem"". If you're using Window Sandbox, this may be related to a known issue with winget on Windows Sandbox: https://github.com/microsoft/Windows-Sandbox/issues/67"
     }
     
@@ -233,10 +241,11 @@ if (Test-Path $wingetPath) {
     if ($response -eq '') {
         & $wingetPath update --all
     }
-}
-else {
+} else {
     # Try to find a versioned install under Program Files\WindowsApps
     $WinGetFolderPath = (Get-ChildItem -Path ([System.IO.Path]::Combine($env:ProgramFiles, 'WindowsApps')) -Filter "Microsoft.DesktopAppInstaller_*_*${arch}__8wekyb3d8bbwe" | Sort-Object Name | Select-Object -Last 1).FullName
+
+    # Output
     Write-Debug "WinGetFolderPath: $WinGetFolderPath"
 
     if ($null -ne $WinGetFolderPath) {
@@ -248,8 +257,7 @@ else {
 
         Write-Output "winget folder permissions and PATH updated successfully."
         Write-Output "A restart or new session may be required for changes to take effect."
-    }
-    else {
+    } else {
         Write-Warning "winget folder path not found. You may need to manually add winget's folder path to your system PATH environment variable."
     }
 
