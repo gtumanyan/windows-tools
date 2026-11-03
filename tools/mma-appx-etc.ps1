@@ -302,9 +302,6 @@ $null = Set-ItemProperty -Path HKCU:\Software\Microsoft\GameBar -Name AutoGameMo
 "Letting Windows improve Start and search results by tracking app launches (Remember commands typed in Run)..."
 Set-ItemProperty -Path Registry::HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name 'Start_TrackProgs' -Type DWord -Value 1 -Force
 
-# "Adding 'Devices and Printers' to 'This PC'..."
-# New-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8A91A66-3A7D-4424-8D24-04E180695C7A}
-
 "Disabling Connected User Experiences and Telemetry..."
 Stop-Service -Name "DiagTrack" 2>&1
 $null = Set-Service -Name DiagTrack -StartupType Disabled
