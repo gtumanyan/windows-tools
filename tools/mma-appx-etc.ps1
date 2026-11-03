@@ -20,7 +20,7 @@ Version:       3 ! Edge browser removal and much more
 				 + Remember commands typed in Run menu
 				 + Startup/Shutdown Verbose Status Messages
 				 + Set Windows Terminal to Automatically copy selection to clipboard
-				 #>
+#>
 # Using this to suppress much error output:
 $ErrorActionPreference = "SilentlyContinue"
 
