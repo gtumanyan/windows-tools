@@ -4,7 +4,7 @@ This is a toolset to improve the performance of Windows desktop and server opera
 
 ## To launch the script download and run
 
-[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [DeviceCleanup](#DeviceCleanup), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [Installs/updates winget](#install-winget), and then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
+[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [DeviceCleanup](#devicecleanup), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CleanTasks](#cleantasks-clean-scheduled-tasks), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [Installs/updates winget](#install-winget), and then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
 
 No need to run as admin, the script will relaunch itself with admin privilleges.
 
@@ -21,7 +21,7 @@ The above are all implemented in [mma-appx-etc](tools/mma-appx-etc.ps1) for your
 
 ## DeviceCleanup
 
-Over time, Windows accumulates 'ghost devices', devices that can show up in Device Manager as transparent because they aren't actually there, but things are set up if they are plugged in again.  This applies to anything and everything, including motherboard device objects replaced during driver updates, VSS items, USB sticks inserted and removed, really anything at all.  This contributes greatly to a slowdown of an old OS install image.  And DeviceCleanup by Uwe Sieber uninstalls them all.  These registry items pile up over time, we have seen some older Windows 7 desktops with hundreds of them, and they slow down Windows File Explorer and file management in general quite a bit.  [DeviceCleanup](https://github.com/gtumanyan/windows-tools/raw/master/tools/DeviceCleanup.ps1) downloads the utility from www.uwe-sieber.de, unpacks it, runs the appropriate (32-bit or 64-bit) binary, and then cleans up after itself.
+Over time, Windows accumulates 'ghost devices', devices that can show up in Device Manager as transparent because they aren't actually there, but things are set up if they are plugged in again.  This applies to anything and everything, including motherboard device objects replaced during driver updates, VSS items, USB sticks inserted and removed, really anything at all.  This contributes greatly to a slowdown of an old OS install image.  And DeviceCleanup by Uwe Sieber uninstalls them all.  These registry items pile up over time, we have seen some older Windows 7 desktops with hundreds of them, and they slow down Windows File Explorer and file management in general quite a bit.  [DeviceCleanup](https://github.com/gtumanyan/windows-tools/raw/master/tools/DeviceCleanup.ps1) downloads the utility from <www.uwe-sieber.de>, unpacks it, runs the appropriate (32-bit or 64-bit) binary, and then cleans up after itself.
 
 ## TweakSMB: Tweak SMB file sharing for performance and reliability
 
@@ -47,6 +47,15 @@ The tool is designed for Windows 10/2019 down through XP/2003. It is self-elevat
 ## OVSS: Optimize VSS
 
 By default, on Windows client OS systems, VSS is active on all VSS-aware volumes, but it is not optimized, which in this case means, there is an "association" or preallocation, of zero space.  On Windows server OS systems, VSS is likewise active, but there is no association/preallocation, at all, on any VSS-aware volumes.  Many different Windows tools' documentation includes recommendations concerning this, some stating that every volume to be backed up should have 20% of its space "associated" or preallocated for VSS, others recommending UNBOUNDED.    [OVSS](https://github.com/gtumanyan/windows-tools/raw/master/tools/OVSS.ps1) does this, and also, makes a simple attempt to reduce orphan shadows.  Orphan shadows are VSS snapshots existing uselessly because of old aborted backups, slowing down drive access, and building up space in System Volume Information.  OVSS does not try to address SVI buildup thoroughly, for this [please see this page.](https://notes.ponderworthy.com/thorough-cleanup-of-vss)
+
+## CleanTasks: Clean Scheduled Tasks
+
+For quite a while I had been curious as to why a straightforward way to remove unwanted Windows scheduled tasks in bulk was not available. Task Scheduler is fine for one task at a time, but the interesting ones are scattered deep in the Microsoft tree, `Unregister-ScheduledTask` leaves the empty folders behind, and nothing in the GUI deletes a folder at all. **CleanTasks** is a PowerShell script that takes a plain list of Task Scheduler paths and removes them through the `Schedule.Service` COM API.
+
+One thing discovered along the way is that a good number of the tasks which look like telemetry are nothing of the kind. DsSvcCleanup is a token janitor for the Data Sharing Service that brokers data between apps. StateRepository\MaintenanceTasks keeps the State Repository databases in order — the same application-model store the Start menu, Settings and every packaged app lean on. UCPD velocity belongs to the User Choice Protection Driver, the watchdog that stops programs from rewriting your default browser and file associations behind your back. And Secure-Boot-Update is the only thing on the box that will ever push the 2023 UEFI certificates into firmware before the 2011 ones run out. Remove those and you have gained no privacy and lost something real.
+
+The list shipped here is a starting point, not gospel. Microsoft documents some of these tasks thoroughly and others barely at all, names are inconsistent (MDMMaintenenceTask is spelled exactly that way in Windows), and the set moves between builds — so corrections, additions and "this one broke X on my machine" [reports](https://github.com/gtumanyan/windows-tools/issues) are all welcome.
+The script must be run elevated, reports Access Denied rather than hiding it (a few Microsoft tasks carry ACLs that even SYSTEM cannot override without taking ownership, and disabling those is the sane fallback), and is safe to run repeatedly, since anything already absent is simply noted and skipped. Expect a monthly cumulative update to recreate some of what was removed; that is why it is a script and not a one-time checklist.
 
 ## CATE: (C)lean (A)ll system and user profile (T)emp folders, (E)tcetera
 
@@ -81,7 +90,7 @@ By default, in Windows since XP/2003, if a folder is shared to the network via S
 ### ⚠️ DEPRECATED: GETREDISTS.CMD (Legacy)
 
 > **Status:** Obsolete for Windows 10 1809+, Windows Server 2019+, and all LTSC editions.
-> 
+>
 > This script has been superseded by **[`InstallWinget.ps1`](tools/Optimize.ps1)** + native WinGet commands. Use winget install Microsoft.VCRedist instead
 
 Lots of software uses Microsoft VC++ redistributables.  They get updated fairly often and almost never automatically.  To bring all of yours up to date and install all the newers which Microsoft supports, run [GETREDISTS.CMD](https://raw.githubusercontent.com/gtumanyan/windows-tools/master/RUN/GETREDISTS.CMD) to call GetRedists.ps1.  Requires PowerShell 5.1, and automatically pulls in the VcRedist module.

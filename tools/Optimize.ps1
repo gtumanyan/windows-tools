@@ -62,6 +62,7 @@ try {
         'wt_removeGhosts.ps1',
         'OWTAS.ps1',
         'OVSS.ps1',
+        'CleanTasks.ps1',
         'CATE.ps1',
         'TweakHardware.ps1',
         'TweakMemTCP.ps1',
