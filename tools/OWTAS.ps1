@@ -96,7 +96,7 @@ if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 $totalRAMinBytes = (Get-CimInstance -class "cim_physicalmemory" | Measure-Object -Property Capacity -Sum).Sum
 $totalRAMinGB = [double]$totalRAMinBytes / 1024.0 / 1024.0 / 1024.0
 
-"Available RAM: " + [int]$totalRAMinGB + "G"
+"Available RAM: " + [int]$totalRAMinGB + "GB"
 
 # Then find out whether this OS is 32-bit or 64-bit, and calculate changes.
 # We add half as many threads on a 64-bit OS, because each thread could take
@@ -109,9 +109,7 @@ if ([System.IntPtr]::Size -eq 4)
     $AddCriticalWorkerThreads = [Int][Math]::Truncate($totalRAMinGB * 6)
     $AddDelayedWorkerThreads = [Int][Math]::Truncate($totalRAMinGB * 6)
     $DefaultWorkerThreads = 64
-
-    "OS bit width: 32"
-    }
+}
 else
     {
     # 64-bit OS
@@ -119,11 +117,7 @@ else
     $AddCriticalWorkerThreads = [Int][Math]::Truncate($totalRAMinGB * 3)
     $AddDelayedWorkerThreads = [Int][Math]::Truncate($totalRAMinGB * 3)
     $DefaultWorkerThreads = 64
-
-    "OS bit width: 64"
-    }
-
-""
+}
 
 # Now we make changes.
 # http://www.tomsitpro.com/articles/powershell_registry-powershell_command_line,2-152.html
