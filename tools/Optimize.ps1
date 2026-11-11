@@ -59,7 +59,6 @@ try {
     $ps_script_list = @(
         'mma-appx-etc.ps1',
         'DeviceCleanup.ps1',
-        'wt_removeGhosts.ps1',
         'OWTAS.ps1',
         'OVSS.ps1',
         'CleanTasks.ps1',
@@ -81,7 +80,7 @@ try {
         $run_script = ".\$ps_script"
 
         & $run_script
-        Remove-Item ".\$ps_script"
+        Remove-Item .\$ps_script
     }
 
     Write-Debug "Script completed successfully."
