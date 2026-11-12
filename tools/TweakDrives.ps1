@@ -93,12 +93,6 @@ Get-PhysicalDisk | ForEach-Object {
 ""
 "Tweaks for all drives..."
 ""
-
-# Using & instead of Invoke-Expression, this appears to be security-positive, hopefully less apt to be false-positived by security tools
-
-# Disable Last Access Time stamp in directories, for performance. Does not cause ill effects, widely tested.
-& fsutil behavior set DisableLastAccess 1 | Out-Null
-
 # This one enables automatic TRIM in Windows even though it's a 0.  
 # Does not always work, the above manual TRIMs are therefore sometimes vital.
 & fsutil behavior set DisableDeleteNotify 0 | Out-Null
