@@ -70,8 +70,7 @@ Param()
 ""
 # Self-elevate if not already elevated.
 if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-}
-else {
+} else {
 	"Not running as elevated.  Starting elevated shell."
 	Start-Process powershell -WorkingDirectory $PWD.Path -Verb runAs -ArgumentList "-noprofile -noexit -file $PSCommandPath"
 	return "Done. This one will now exit."
@@ -94,30 +93,6 @@ Get-PhysicalDisk | ForEach-Object {
 ""
 "Tweaks for all drives..."
 ""
-
-$ramModules = Get-CimInstance Win32_PhysicalMemory
-$TotalMemory = [math]::Round(($ramModules | Measure-Object Capacity -Sum).Sum / 1GB, 2)
-	
-# Terminal output
-Write-Host "Total RAM: $TotalMemory GB"
-Write-Host "Modules: $($ramModules.Count)"
-$ramModules | ForEach-Object {
-	Write-Host "- $([math]::Round($_.Capacity / 1GB, 2)) GB, $($_.Speed) MHz, $($_.Manufacturer)"
-}
-
-# -------------------------
-# Configure MFT and Memory Usage
-# -------------------------
-if ($TotalMemory -lt 8) {
-	fsutil behavior set memoryusage 1
-    fsutil behavior set mftzone 1
-} elseif ($TotalMemory -lt 16) {
-	fsutil behavior set memoryusage 1
-    fsutil behavior set mftzone 2
-} else {
-	fsutil behavior set memoryusage 2
-    fsutil behavior set mftzone 2
-}
 
 # Using & instead of Invoke-Expression, this appears to be security-positive, hopefully less apt to be false-positived by security tools
 
@@ -176,8 +151,7 @@ function Defrag-NTFS-Metafiles {
 	if ([System.IntPtr]::Size -eq 4) {
 		# 32-bit OS
 		$cmdstr = "CONTIG"
-	}
- else {
+	} else {
 		$cmdstr = "CONTIG64"
 	}
 
