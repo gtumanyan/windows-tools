@@ -181,10 +181,10 @@ setupDWORD "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider" Netbt
 # https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md#networkthrottlingindex
 # setupDWORD "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" "0xffffffff"
 
-Write-Host "Disabling Loopback Large Mtu to fix BBR2 hangs in apps like Steam or Gradle..." -NoNewline
-netsh int ip set global loopbacklargemtu=disable
-Write-Host "Setting BBR2 Congestion provider..." -NoNewline
-netsh int tcp set supplemental internet congestionprovider=bbr2
+# Write-Host "Disabling Loopback Large Mtu to fix BBR2 hangs in apps like Steam or Gradle..." -NoNewline
+# netsh int ip set global loopbacklargemtu=disable
+# Write-Host "Setting BBR2 Congestion provider..." -NoNewline
+# netsh int tcp set supplemental internet congestionprovider=bbr2
 Write-Host "Disabling Memory pressure protection (SYN flood drop)..." -NoNewline
 netsh int tcp set security mpp=disabled
 Write-Host "Increasing Reassembly Out Of Order Limit to 1300..." -NoNewline
@@ -210,7 +210,7 @@ Set-NetTCPSetting -SettingName "*" -InitialRto 2000 -ErrorAction SilentlyContinu
 try {Set-NetTCPSetting -SettingName "*" -Timestamps Enabled -ErrorAction Stop} 
 catch {Write-Warning "Allowing timestamps failed, skipping..."}
 # Connect retry attempts using SYN packets
-Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction SilentlyContinue
+# Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction SilentlyContinue
 
 # The 3-Clause BSD License
 
@@ -254,13 +254,3 @@ Set-NetTCPSetting -SettingName "*" -MaxSynRetransmissions 4 -ErrorAction Silentl
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-
-
-
-
-
-
-
-
-
