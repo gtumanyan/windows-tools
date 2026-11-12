@@ -90,12 +90,16 @@ Get-PhysicalDisk | ForEach-Object {
 		Get-Volume -Partition $_ | Optimize-Volume -SlabConsolidate -Verbose -ErrorAction SilentlyContinue
 	}
 }
-""
-"Tweaks for all drives..."
-""
+
 # This one enables automatic TRIM in Windows even though it's a 0.  
 # Does not always work, the above manual TRIMs are therefore sometimes vital.
-& fsutil behavior set DisableDeleteNotify 0 | Out-Null
+$Key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+$currentTrim = (Get-ItemProperty -Path $Key -Name 'DisableDeleteNotification' -ErrorAction SilentlyContinue).DisableDeleteNotification
+# If it is missing, 0, or anything other than exactly 1, Windows defaults to TRIM enabled.
+if ($currentTrim -eq 1) {
+    Write-Host "TRIM was disabled! Enabling it..."
+    Set-ItemProperty -Path $Key -Name 'DisableDeleteNotification' -Type DWord -Value 0
+}
 
 function Unzip {
 	param([string]$zipfile, [string]$outpath)
