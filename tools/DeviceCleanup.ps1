@@ -56,10 +56,10 @@ Invoke-WebRequest -Uri $download_url -OutFile $zipFile -UseBasicParsing
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $TempPath)
 
-    # Both zips contain DeviceCleanupCmd.exe
-    $exe = Get-ChildItem -LiteralPath $TempPath -Recurse -Filter 'DeviceCleanupCmd*.exe' |
-           Select-Object -First 1 -ExpandProperty FullName
-    if (-not $exe) { throw "No DeviceCleanupCmd exe found in $TempPath" }
+# Both zips contain DeviceCleanupCmd.exe
+$exe = Get-ChildItem -LiteralPath $TempPath -Recurse -Filter 'DeviceCleanupCmd*.exe' |
+Select-Object -First 1 -ExpandProperty FullName
+if (-not $exe) { throw "No DeviceCleanupCmd exe found in $TempPath" }
 
 "Running $exe"
 & $exe '* -m:3m -s -n -v'
