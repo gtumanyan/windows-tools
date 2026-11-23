@@ -83,7 +83,7 @@ $orphanDrivers = @('mfeaacsk','mfehck','mfedisk') | Where-Object {
 if ($orphanDrivers) {
     Write-Host "Removing orphan $($orphanDrivers -join ', ') drivers..."
 	"If Trellix(McAfee) installed - remove immediately!"
-    & ([ScriptBlock]::Create((irm 'https://github.com/gtumanyan/windows-tools/raw/master/tools/CleanDrivers.ps1' -Raw))) -DriverName $orphanDrivers
+    & ([ScriptBlock]::Create((irm 'https://raw.githubusercontent.com/gtumanyan/windows-tools/master/tools/CleanDrivers.ps1'))) $orphanDrivers
 }
 
 # Do TRIM if possible for all volumes on SSDs...

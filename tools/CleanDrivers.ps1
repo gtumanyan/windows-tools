@@ -6,15 +6,16 @@ param(
     # Collects space-separated names too; default covers Optimize.ps1's no-arg call
     [Parameter(ValueFromRemainingArguments = $true)]
     [ValidatePattern('^[A-Za-z0-9_-]+(\.sys)?$')]
-    [string[]]$DriverName = @('mfeaacsk','mfehck','mfedisk')
+    [string[]]$DriverName = @('mfeaacsk', 'mfehck', 'mfedisk')
 )
+
 
 function Get-DriverState {
     param([string]$Name)
 
-    $Name       = [IO.Path]::GetFileNameWithoutExtension($Name.Trim())
-    $svcRoot    = 'HKLM:\SYSTEM\CurrentControlSet\Services'
-    $classRoot  = 'HKLM:\SYSTEM\CurrentControlSet\Control\Class'
+    $Name = [IO.Path]::GetFileNameWithoutExtension($Name.Trim())
+    $svcRoot = 'HKLM:\SYSTEM\CurrentControlSet\Services'
+    $classRoot = 'HKLM:\SYSTEM\CurrentControlSet\Control\Class'
     $driverFile = Join-Path $env:SystemRoot "System32\drivers\$Name.sys"
 
     # 1. service keys — exact name AND ImagePath scan
@@ -50,8 +51,8 @@ function Get-DriverState {
     $filters = @()
     Get-ChildItem $classRoot -EA 0 | ForEach-Object {
         $cls = $_
-        $p   = Get-ItemProperty $cls.PSPath -EA 0
-        foreach ($kind in 'UpperFilters','LowerFilters') {
+        $p = Get-ItemProperty $cls.PSPath -EA 0
+        foreach ($kind in 'UpperFilters', 'LowerFilters') {
             $vals = @($p.$kind)
             if ($vals -and ($vals -contains $Name)) {
                 $filters += @{
@@ -68,8 +69,8 @@ function Get-DriverState {
     # 3. SafeBoot
     $safeBoot = @(
         Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Control\SafeBoot' -Recurse -EA 0 |
-            Where-Object PSChildName -eq $Name |
-            Select-Object -ExpandProperty PSPath
+        Where-Object PSChildName -eq $Name |
+        Select-Object -ExpandProperty PSPath
     )
 
     [pscustomobject]@{
@@ -84,18 +85,13 @@ function Get-DriverState {
 function Remove-Driver {
     param([string]$Name)
 
-    $Name       = [IO.Path]::GetFileNameWithoutExtension($Name.Trim())
-
+    $Name = [IO.Path]::GetFileNameWithoutExtension($Name.Trim())
     $state = Get-DriverState -Name $Name
-    if (-not $state.Present) {
-        "$Name`: not present."
-        return [pscustomobject]@{ Name=$Name; Status='NotPresent'; RebootRequired=$false; Detail='No binary/service/filter found' }
-    }
 
     # Service keys: disable first so early boot skips it even if delete is pending
     foreach ($s in $state.Services) {
         & sc.exe config $s.Name start= disabled | Out-Null
-        & sc.exe delete  $s.Name              | Out-Null
+        & sc.exe delete $s.Name                 | Out-Null
     }
 
     # Class filters — keep partmgr etc.
@@ -112,33 +108,52 @@ function Remove-Driver {
         Remove-Item -LiteralPath $sb -Recurse -Force -EA SilentlyContinue
     }
 
-    # Binary: delete now, or schedule on reboot
+    # Binary: delete now, or schedule on reboot (only if it actually exists)
+    $status = 'Removed'
+    $detail = 'Binary/service/filters removed'
     $reboot = $false
-    try {
-        Remove-Item -LiteralPath $state.DriverFile -Force -EA Stop
-        "$state.DriverFile deleted."
-    } catch {
-        $reboot = $true
-        $sm = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager'
-        $existing = (Get-ItemProperty -LiteralPath $sm -Name PendingFileRenameOperations -EA SilentlyContinue).PendingFileRenameOperations
-        $pend = if ($existing) { @($existing) } else { @() }
-        $entry = "\??\$($state.DriverFile)"
-        if ($pend -notcontains $entry) {
-            $pend += $entry, ''
-            Set-ItemProperty -LiteralPath $sm -Name PendingFileRenameOperations -Value ([string[]]$pend) -Type MultiString
+
+    if (-not (Test-Path -LiteralPath $state.DriverFile -PathType Leaf)) {
+        if ($state.Services.Count -or $state.ClassFilters.Count -or $state.SafeBoot.Count) {
+            $detail = 'Binary already absent; registry entries cleaned'
+        } else {
+            $status = 'NotPresent'
+            $detail = 'Nothing to remove'
         }
-        "$state.DriverFile in use; deletion scheduled for next reboot."
+    } else {
+        try {
+            Remove-Item -LiteralPath $state.DriverFile -Force -EA Stop
+            Write-Host "$($state.DriverFile) deleted."
+        } catch {
+            Write-Warning "Immediate deletion failed for '$($state.DriverFile)': $($_.Exception.Message)"
+            $sm = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager'
+            $existing = (Get-ItemProperty -LiteralPath $sm -Name PendingFileRenameOperations -EA SilentlyContinue).PendingFileRenameOperations
+            $pend = if ($existing) { @($existing) } else { @() }
+            $entry = "\??\$($state.DriverFile)"
+            if ($pend -notcontains $entry) {
+                $pend += $entry, ''
+                Set-ItemProperty -LiteralPath $sm -Name PendingFileRenameOperations -Value ([string[]]$pend) -Type MultiString -ErrorAction Stop
+            }
+            Write-Host "$($state.DriverFile): deletion scheduled for next reboot."
+            $status = 'Scheduled'
+            $detail = 'File locked; pending rename set'
+            $reboot = $true
+        }
     }
 
     [pscustomobject]@{
-        Name            = $Name
-        Status          = if ($reboot) { 'Scheduled' } else { 'Removed' }
-        RebootRequired  = $reboot
-        Detail          = if ($reboot) { 'File locked; pending rename set' } else { 'Binary/service/filters removed' }
+        Name           = $Name
+        Status         = $status
+        RebootRequired = $reboot
+        Detail         = $detail
     }
 }
 
 # Execution (after function definition)
-foreach ($drv in $DriverName) {
+$results = foreach ($drv in $DriverName) {
     Remove-Driver -Name $drv
 }
+
+$results | Format-Table Name, Status,
+    @{ Name = 'RebootRequired'; Expression = { $_.RebootRequired }; Alignment = 'Center' },
+    Detail -AutoSize
