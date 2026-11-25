@@ -234,6 +234,33 @@ catch {
 # Winget usually shims to %LOCALAPPDATA%\Microsoft\WindowsApps
 $wingetPath = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\winget.exe'
 if (Test-Path $wingetPath) {
+
+    # --- Enable Experimental Features first ---
+    $settingsPath = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json'
+
+    # 1. GET - read current settings via winget (fallback to file/empty on older versions)
+    try {
+        $settings = (winget settings export) -join "`n" | ConvertFrom-Json
+    } catch {
+        if (Test-Path $settingsPath) { $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json }
+        else { $settings = [PSCustomObject]@{} }
+    }
+
+    # 2. SET - enable experimental features
+    if (-not $settings.PSObject.Properties['experimentalFeatures']) {
+        $settings | Add-Member experimentalFeatures ([PSCustomObject]@{})
+    }
+    foreach ($feature in 'directMSI', 'resume', 'fonts', 'interactivePackageSelection') {
+        if ($settings.experimentalFeatures.PSObject.Properties[$feature]) {
+            $settings.experimentalFeatures.$feature = $true
+        } else {
+            $settings.experimentalFeatures | Add-Member $feature $true
+        }
+    }
+
+    # 3. Write back
+    $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
+
     Write-Host "`nDone! Running 'winget update' to check for available updates." -ForegroundColor Green
     & $wingetPath update --accept-source-agreements
     Write-Host "`nUpdate all?" -ForegroundColor Cyan
