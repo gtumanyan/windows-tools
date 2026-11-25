@@ -4,7 +4,7 @@ This is a toolset to improve the performance of Windows desktop and server opera
 
 ## To launch the script download and run
 
-[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [DeviceCleanup](#devicecleanup), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CleanTasks](#cleantasks-clean-scheduled-tasks), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [Installs/updates winget](#install-winget), and then [TweakNTFS](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
+[OPTIMIZE.CMD](RUN/OPTIMIZE.CMD) which will download and run [Optimize.ps1](tools/Optimize.ps1), which in turn will run [MMA-AppX-etc](#mma-appx-etc) first, then [DeviceCleanup](#devicecleanup), then [OWTAS](#owtas-optimize-service-work-items-and-additionaldelayed-worker-threads), then [TweakSMB](#tweaksmb-tweak-smb-file-sharing-for-performance-and-reliability), then [OVSS](#ovss-optimize-vss), then [CleanTasks](#cleantasks-clean-scheduled-tasks), then [CATE](#cate-clean-all-system-and-user-profile-temp-folders-etcetera), then [TweakHardware](#tweakhardware-turn-off-much-usb-power-management-and-optimize-nics-for-performance), then [TweakMemTCP](#tweakmemtcp), then [Installs/updates winget](#install-winget), and then [TweakDrives](#tweakdrives-tweak-ntfs-for-performance-and-reliability).  The result is a distinct performance hike on any current Windows machine, along with much cleanup.
 
 No need to run as admin, the script will relaunch itself with admin privilleges.
 
@@ -79,7 +79,13 @@ It runs automatically as part of the default optimization set. If a newer WinGet
 
 ## TweakDrives: Tweak NTFS for Performance and Reliability
 
-In [TweakDrives](tools/TweakDrives.ps1), SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.
+In [TweakDrives](tools/TweakDrives.ps1), disk-class filter drivers are checked and orphaned ones removed (see [CleanDrivers](tools/CleanDrivers.ps1)), then SSD TRIM is done if SSDs are detected, SysInternals' CONTIG is used to defrag NTFS metafiles, FSUTIL is used to produce a well-balanced NTFS, performance increase with reliability increase too, for all NTFS volumes currently mounted.
+
+## CleanDrivers: Remove orphaned kernel and filter drivers
+
+Uninstallers for filter drivers, especially security-product ones, often leave the driver behind. The service key stays under `CurrentControlSet\Services`, the name stays on a class `UpperFilters` or `LowerFilters` list, a SafeBoot entry can remain, and the `.sys` file sits in `System32\drivers`. Windows still tries to load it. After McAfee Endpoint Security is removed, the usual leftovers are `mfeaacsk`, `mfehck` and `mfedisk`; a disk filter with no product behind it is a good way to get slow I/O, or be considered as incompatible for Native NVME functioning.
+
+The script takes those three by default, which is what `Optimize.ps1` passes by calling it with no arguments, and any other driver name on the command line, with or without `.sys`. For each name it finds the service key and any other service whose `ImagePath` points at the same file, disables and deletes the service, pulls the name out of the class filter lists while leaving the rest of the list alone (`partmgr` and the others stay), and removes matching SafeBoot keys. The binary is deleted immediately when it is not in use. If it is locked, deletion is scheduled for the next boot and the run is reported as needing a reboot. A driver that was never installed, or was already cleaned, is reported as not present: a missing file is not treated as a locked file, and no pending-rename entry is written for it. It must be run elevated, and it is safe to run again.
 
 ## TOSC: Turn Off Share Caching
 
